@@ -554,7 +554,7 @@ enum Token {
  */
 extern "C" int greentea_getc() {
     uint8_t c;
-    read(STDOUT_FILENO, &c, 1);
+    read(STDIN_FILENO, &c, 1);
     return c;
 }
 
