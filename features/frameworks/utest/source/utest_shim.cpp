@@ -20,7 +20,6 @@
 #include "utest/utest_stack_trace.h"
 #include "platform/SingletonPtr.h"
 #include "Timeout.h"
-#include "interrupt_sam_nvic.h"
 using mbed::Timeout;
 using namespace std::chrono;
 
@@ -99,16 +98,5 @@ utest_v1_scheduler_t utest_v1_get_scheduler()
 {
     UTEST_LOG_FUNCTION();
     return utest_v1_scheduler;
-}
-
-/// must be implemented by the port
-void utest_v1_enter_critical_section(void)
-{
-    cpu_irq_enter_critical();
-}
-
-void utest_v1_leave_critical_section(void)
-{
-    cpu_irq_leave_critical();
 }
 }
