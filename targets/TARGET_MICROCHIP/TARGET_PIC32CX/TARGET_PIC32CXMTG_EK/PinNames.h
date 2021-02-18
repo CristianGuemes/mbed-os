@@ -119,6 +119,8 @@ typedef enum {
 	/* Board leds */
     LED_GREEN = D16,
     LED_BLUE  = D19,
+	LED_PWM0 = D17,
+	LED_PWM1 = D18,
 
     /* mbed original LED naming */
     LED1 = LED_GREEN,
@@ -162,6 +164,12 @@ typedef enum {
 	XPLAINPRO_SPI_MISO = A23,
 	XPLAINPRO_SPI_SCLK = A22,
 	XPLAINPRO_SPI_CSEL = A21,
+
+	/* Mikro Bus 1 PWM */
+	MIKROBUS1_PWM = D17,
+
+	/* Mikro Bus 2 PWM */
+	MIKROBUS2_PWM = D18,
 
     /* Not connected */
     NC = (int)0xFFFFFFFF

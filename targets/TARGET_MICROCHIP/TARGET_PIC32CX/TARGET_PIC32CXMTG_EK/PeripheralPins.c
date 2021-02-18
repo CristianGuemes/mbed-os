@@ -123,54 +123,16 @@ MBED_WEAK const PinMap PinMap_I2C_SCL[] = {
     {NC, NC, 0}
 };
 
-// /************PWM***************/
-// MBED_WEAK const PinMap PinMap_PWM[] = {
-// #if defined(TIMER_ROUTE_CC0PEN) || defined(TIMER_ROUTEPEN_CC0PEN)
-    // /* PWM0 */
-    // {PA0,  PWM_CH0,  0},
-    // {PB14, PWM_CH0,  9},
-    // {PB15, PWM_CH0, 10},
-    // {PC6,  PWM_CH0, 11},
-    // {PD10, PWM_CH0, 18},
-    // {PD14, PWM_CH0, 22},
-    // {PF0,  PWM_CH0, 24},
-    // {PF4,  PWM_CH0, 28},
-// #endif
-// #if defined(TIMER_ROUTE_CC1PEN) || defined(TIMER_ROUTEPEN_CC1PEN)
-    // /* PWM1 */
-    // {PA1,  PWM_CH1,  0},
-    // {PB11, PWM_CH1,  5},
-    // {PC7,  PWM_CH1, 11},
-    // {PD11, PWM_CH1, 18},
-    // {PD15, PWM_CH1, 22},
-    // {PF1,  PWM_CH1, 24},
-    // {PF5,  PWM_CH1, 28},
-// #endif
-// #if defined(TIMER_ROUTE_CC2PEN) || defined(TIMER_ROUTEPEN_CC2PEN)
-    // /* PWM2 */
-    // {PA2,  PWM_CH2,  0},
-    // {PA4,  PWM_CH2,  2},
-    // {PB12, PWM_CH2,  5},
-    // {PC8,  PWM_CH2, 11},
-    // {PC10, PWM_CH2, 13},
-    // {PD12, PWM_CH2, 18},
-    // {PF2,  PWM_CH2, 24},
-    // {PF6,  PWM_CH2, 28},
-// #endif
-// #if defined(TIMER_ROUTE_CC3PEN) || defined(TIMER_ROUTEPEN_CC3PEN)
-    // /* PWM3 */
-    // {PA3,  PWM_CH3,  0},
-    // {PA5,  PWM_CH3,  2},
-    // {PB13, PWM_CH3,  5},
-    // {PC9,  PWM_CH3, 11},
-    // {PC11, PWM_CH3, 13},
-    // {PD9,  PWM_CH3, 14},
-    // {PD13, PWM_CH3, 18},
-    // {PF3,  PWM_CH3, 24},
-    // {PF7,  PWM_CH3, 28},
-// #endif
-    // {NC  , NC     , NC}
-// };
+/************PWM***************/
+MBED_WEAK const PinMap PinMap_PWM[] = {
+    /* PWM0 */
+    {D17, PWM_CH0, IOPORT_MODE_MUX_A},
+    /* PWM1 */
+    {D18, PWM_CH1, IOPORT_MODE_MUX_A},
+    /* PWM2 */
+    {D19, PWM_CH2, IOPORT_MODE_MUX_A},
+    {NC, NC, 0}
+};
 
 /*************SPI**************/
 MBED_WEAK const PinMap PinMap_SPI_MOSI[] = {
