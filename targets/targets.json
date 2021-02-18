@@ -6988,7 +6988,8 @@
             "I2CSLAVE",
             "SPI",
             "SPISLAVE",
-            "QSPI"
+            "QSPI",
+            "PWMOUT"
         ],
         "components_add": [
             "FLASHIAP"

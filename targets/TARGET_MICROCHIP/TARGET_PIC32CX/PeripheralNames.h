@@ -60,22 +60,13 @@ typedef enum {
 } I2CName;
 #endif
 
-// #if DEVICE_PWMOUT
-// typedef enum {
-// #if defined(TIMER_ROUTE_CC0PEN) || defined(TIMER_ROUTEPEN_CC0PEN)
-    // PWM_CH0 = 0,
-// #endif
-// #if defined(TIMER_ROUTE_CC1PEN) || defined(TIMER_ROUTEPEN_CC1PEN)
-    // PWM_CH1 = 1,
-// #endif
-// #if defined(TIMER_ROUTE_CC2PEN) || defined(TIMER_ROUTEPEN_CC2PEN)
-    // PWM_CH2 = 2,
-// #endif
-// #if defined(TIMER_ROUTE_CC3PEN) || defined(TIMER_ROUTEPEN_CC3PEN)
-    // PWM_CH3 = 3,
-// #endif
-// } PWMName;
-// #endif
+#if DEVICE_PWMOUT
+typedef enum {
+    PWM_CH0 = 0,
+    PWM_CH1 = 1,
+    PWM_CH2 = 2,
+} PWMName;
+#endif
 
 #if DEVICE_SPI
 #define SPI_COUNT 7

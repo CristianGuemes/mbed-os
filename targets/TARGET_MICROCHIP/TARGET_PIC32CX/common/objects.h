@@ -72,7 +72,6 @@ struct port_s {
 
 #if DEVICE_PWMOUT
 struct pwmout_s {
-    //Channel on TIMER
     uint32_t channel;
     PinName pin;
 };
