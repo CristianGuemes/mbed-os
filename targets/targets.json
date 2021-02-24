@@ -7006,7 +7006,8 @@
             "__PIC32CX2051MTG100__"
         ],
 		"device_name": "PIC32CX2051MTG100",
-		"detect_code": ["0921"]
+		"detect_code": ["0921"],
+		"components_add": ["SST26VF"]
     },
     "__build_tools_metadata__": {
         "version": "1",
