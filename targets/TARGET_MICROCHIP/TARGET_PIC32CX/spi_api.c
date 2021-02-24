@@ -164,6 +164,10 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk, PinName cs)
 	} else {
 		// Do Nothing
 	}
+
+	/* Enable SPI peripheral. */
+	spi_enable_clock(obj->spi);
+	spi_reset(obj->spi);
 }
 
 void spi_free(spi_t *obj)
@@ -193,12 +197,8 @@ void spi_free(spi_t *obj)
 
 void spi_format(spi_t *obj, int bits, int mode, int slave)
 {
-	/* Enable SPI peripheral. */
-	spi_enable_clock(obj->spi);
-
-	/* Reset SPI */
+	/* Disable SPI */
 	spi_disable(obj->spi);
-	spi_reset(obj->spi);
 
 	/* Configure SPI by default */
 	spi_disable_mode_fault_detect(obj->spi);
