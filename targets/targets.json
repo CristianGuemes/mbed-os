@@ -6989,7 +6989,8 @@
             "SPI",
             "SPISLAVE",
             "QSPI",
-            "PWMOUT"
+            "PWMOUT",
+			"SLEEP"
         ],
         "components_add": [
             "FLASHIAP"

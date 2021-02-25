@@ -61,7 +61,7 @@ void pmc_sleep(int sleep_mode)
 	case PIC32CX_PM_SMODE_SLEEP_WFI:
 	case PIC32CX_PM_SMODE_SLEEP_WFE:
 		SCB->SCR &= (uint32_t) ~SCR_SLEEPDEEP;
-		cpu_irq_enable();
+		//cpu_irq_enable();
 		__DSB();
 		__WFI();
 		break;
@@ -84,10 +84,10 @@ void pmc_sleep(int sleep_mode)
 		pmc_disable_pll(0);
 		pmc_disable_pll(1);
 		pmc_disable_pll(2);
-		
+
 		/* Disable the Main Crystal Oscillator */
 		pmc_osc_disable_main_xtal();
-		
+
 		/* Set the FLPM field in the PMC Fast Start-up Mode register */
 		if (sleep_mode == PIC32CX_PM_SMODE_WAIT_FAST) {
 			pmc_set_flash_in_wait_mode(PMC_FSMR_FLPM_FLASH_STANDBY);
@@ -115,7 +115,7 @@ void pmc_sleep(int sleep_mode)
 			callback_clocks_restored = NULL;
 		}
 
-		cpu_irq_enable();
+		//cpu_irq_enable();
 
 		break;
 	}
@@ -136,10 +136,10 @@ void pmc_sleep(int sleep_mode)
 		pmc_disable_pll(0);
 		pmc_disable_pll(1);
 		pmc_disable_pll(2);
-		
+
 		/* Disable the Main Crystal Oscillator */
 		pmc_osc_disable_main_xtal();
-		
+
 		/* Enable the RTT in 1 Hz mode */
 		if ((RTT->RTT_MR & RTT_MR_RTTDIS) == 0) {
 			/* Disable RTT */
@@ -149,10 +149,10 @@ void pmc_sleep(int sleep_mode)
 			/* Enable RTT */
 			RTT->RTT_MR &= ~RTT_MR_RTTDIS;
 		}
-		
+
 		/* Disable the VDDCORE Supply Monitor */
 		supc_disable_core_monitor(SUPC);
-		
+
 		/* Enter Backup Mode */
 		pmc_enable_backupmode();
 		break;
