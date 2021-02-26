@@ -6995,6 +6995,9 @@
         "components_add": [
             "FLASHIAP"
         ],
+        "macros_add": [
+            "MBED_TICKLESS"
+        ],
         "c_lib": "small",
 		"bootloader_supported": true,
 		"public": false

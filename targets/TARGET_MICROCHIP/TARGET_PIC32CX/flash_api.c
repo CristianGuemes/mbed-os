@@ -110,8 +110,16 @@ int32_t flash_program_page(flash_t *obj, uint32_t address, const uint8_t *data, 
  */
 uint32_t flash_get_sector_size(const flash_t *obj, uint32_t address)
 {
-    (void)obj;
-    (void)address;
+     (void)obj;
+
+#ifdef IFLASH1_SIZE
+    if ((address < IFLASH0_CNC_ADDR) || (address >= (IFLASH0_CNC_ADDR + IFLASH0_SIZE + IFLASH1_SIZE))){
+#else
+    if ((address < IFLASH0_CNC_ADDR) || (address >= (IFLASH0_CNC_ADDR + IFLASH0_SIZE))){
+#endif
+        /* Address outside of flash -- invalid sector */
+        return MBED_FLASH_INVALID_SIZE;
+    }
 
     return 0x1000; /* Minimum Erase operation by 4 KBytes */
 }
