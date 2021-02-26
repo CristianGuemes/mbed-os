@@ -27,6 +27,11 @@
 #include "device.h"
 #include "mpu_api.h"
 
+void portable_delay_cycles(unsigned long n);
+
+#define cpu_us_2_cy(us, f_cpu)  \
+(((uint64_t)(us) * (f_cpu) + (uint64_t)(14e6 - 1ul)) / (uint64_t)14e6)
+
 /* Called before main - implement here if board needs it.
 * Otherwise, let the application override this if necessary */
 void mbed_sdk_init()
@@ -47,4 +52,27 @@ void mbed_sdk_init()
 
     /* Initialize the SAM system */
     sysclk_init();
+}
+
+/* Delay loop is put to SRAM so that FWS will not affect delay time */
+OPTIMIZE_HIGH
+RAMFUNC
+void portable_delay_cycles(unsigned long n)
+{
+	UNUSED(n);
+
+	__asm volatile (
+                    "loop: DMB	\n"
+                    "SUBS R0, R0, #1  \n"
+                    "BNE.N loop         "
+                    );
+}
+
+void wait_ns(unsigned int ns)
+{
+    uint32_t count = cpu_us_2_cy((ns - 1000) / 1000, SystemCoreClock);
+
+    if (count) {
+        portable_delay_cycles(count);
+    }
 }
