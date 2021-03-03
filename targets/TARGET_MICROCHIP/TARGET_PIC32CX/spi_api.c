@@ -316,14 +316,14 @@ int spi_master_block_write(spi_t *obj, const char *tx_buffer, int tx_length, cha
 		}
 		spi_put(obj->spi, val);
 
-        if (i < rx_length) {
-            timeout = SPI_TIMEOUT;
-            while (!spi_is_rx_ready(obj->spi)) {
-                if (!timeout--) {
-                    return ERR_TIME_OUT;
-                }
+        timeout = SPI_TIMEOUT;
+        while (!spi_is_rx_ready(obj->spi)) {
+            if (!timeout--) {
+                return ERR_TIME_OUT;
             }
+        }
 
+        if (i < rx_length) {
             rx_buffer[i] = (char)spi_get(obj->spi);
         }
     }
