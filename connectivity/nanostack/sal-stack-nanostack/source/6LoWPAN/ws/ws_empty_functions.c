@@ -68,6 +68,24 @@ int ws_management_network_name_validate(
     return -1;
 }
 
+int ws_management_phy_mode_id_set(
+    int8_t interface_id,
+    uint8_t phy_mode_id)
+{
+    (void)interface_id;
+    (void)phy_mode_id;
+    return -1;
+}
+
+int ws_management_channel_plan_id_set(
+    int8_t interface_id,
+    uint8_t channel_plan_id)
+{
+    (void)interface_id;
+    (void)channel_plan_id;
+    return -1;
+}
+
 int ws_management_regulatory_domain_set(
     int8_t interface_id,
     uint8_t regulatory_domain,
@@ -421,5 +439,27 @@ int ws_device_min_sens_set(
     (void) device_min_sens;
     return -1;
 }
+
+int ws_test_neighbour_temporary_lifetime_set(int8_t interface_id, uint32_t temporary_lifetime)
+{
+    (void) interface_id;
+    (void) temporary_lifetime;
+    return -1;
+}
+
+void ws_test_skip_edfe_data_send(int8_t interface_id, bool skip)
+{
+    (void) interface_id;
+    (void) skip;
+}
+
+
+int8_t  ws_test_drop_edfe_data_frames(int8_t interface_id, uint8_t number_of_dropped_frames)
+{
+    (void) interface_id;
+    (void) number_of_dropped_frames;
+    return -1;
+}
+
 
 #endif // no HAVE_WS

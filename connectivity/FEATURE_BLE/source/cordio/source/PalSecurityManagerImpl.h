@@ -60,40 +60,10 @@ public:
     ble_error_t reset() final;
 
     ////////////////////////////////////////////////////////////////////////////
-    // Resolving list management
-    //
-
-    /**
-     * @see ::ble::PalSecurityManager::read_resolving_list_capacity
-     */
-    uint8_t read_resolving_list_capacity() final;
-
-    /**
-     * @see ::ble::PalSecurityManager::add_device_to_resolving_list
-     */
-    ble_error_t add_device_to_resolving_list(
-        advertising_peer_address_type_t peer_identity_address_type,
-        const address_t &peer_identity_address,
-        const irk_t &peer_irk
-    ) final;
-
-    /**
-     * @see ::ble::PalSecurityManager::remove_device_from_resolving_list
-     */
-    ble_error_t remove_device_from_resolving_list(
-        advertising_peer_address_type_t peer_identity_address_type,
-        const address_t &peer_identity_address
-    ) final;
-
-    /**
-     * @see ::ble::PalSecurityManager::clear_resolving_list
-     */
-    ble_error_t clear_resolving_list() final;
-
-    ////////////////////////////////////////////////////////////////////////////
     // Pairing
     //
 
+#if BLE_ROLE_CENTRAL
     /**
      * @see ::ble::PalSecurityManager::send_pairing_request
      */
@@ -104,7 +74,9 @@ public:
         KeyDistribution initiator_dist,
         KeyDistribution responder_dist
     ) final;
+#endif // BLE_ROLE_CENTRAL
 
+#if BLE_ROLE_PERIPHERAL
     /**
      * @see ::ble::PalSecurityManager::send_pairing_response
      */
@@ -115,6 +87,7 @@ public:
         KeyDistribution initiator_dist,
         KeyDistribution responder_dist
     ) final;
+#endif // BLE_ROLE_PERIPHERAL
 
     /**
      * @see ::ble::PalSecurityManager::cancel_pairing
@@ -165,6 +138,7 @@ public:
         uint8_t max_encryption_key_size
     ) final;
 
+#if BLE_ROLE_PERIPHERAL
     /**
      * @see ::ble::PalSecurityManager::slave_security_request
      */
@@ -172,11 +146,13 @@ public:
         connection_handle_t connection,
         AuthenticationMask authentication
     ) final;
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     // Encryption
     //
 
+#if BLE_ROLE_CENTRAL
     /**
      * @see ::ble::PalSecurityManager::enable_encryption
      */
@@ -188,6 +164,7 @@ public:
         bool mitm
     ) final;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * @see ::ble::PalSecurityManager::enable_encryption
      */
@@ -196,6 +173,8 @@ public:
         const ltk_t &ltk,
         bool mitm
     ) final;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
+#endif // BLE_ROLE_CENTRAL
 
     /**
      * @see ::ble::PalSecurityManager::encrypt_data
@@ -204,20 +183,6 @@ public:
         const byte_array_t<16> &key,
         encryption_block_t &data
     ) final;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Privacy
-    //
-
-    /**
-     * @see ::ble::PalSecurityManager::set_private_address_timeout
-     */
-    ble_error_t set_private_address_timeout(uint16_t timeout_in_seconds) final;
-
-    /**
-     * @see ::ble::PalSecurityManager::get_identity_address
-     */
-    ble_error_t get_identity_address(address_t &address, bool &public_address) final;
 
     ////////////////////////////////////////////////////////////////////////////
     // Keys
@@ -246,6 +211,14 @@ public:
     ble_error_t set_irk(const irk_t &irk) final;
 
     /**
+     * @see ::ble::PalSecurityManager::set_identity_address
+     */
+    ble_error_t set_identity_address(
+        const address_t &address, bool public_address
+    ) final;
+
+#if BLE_FEATURE_SIGNING
+    /**
      * @see ::ble::PalSecurityManager::set_csrk
      */
     ble_error_t set_csrk(
@@ -264,6 +237,7 @@ public:
     ) final;
 
     ble_error_t remove_peer_csrk(connection_handle_t connection) final;
+#endif // BLE_FEATURE_SIGNING
 
     ////////////////////////////////////////////////////////////////////////////
     // Authentication
@@ -291,6 +265,7 @@ public:
         passkey_num_t passkey
     ) final;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * @see ::ble::PalSecurityManager::secure_connections_oob_request_reply
      */
@@ -300,6 +275,7 @@ public:
         const oob_lesc_value_t &peer_random,
         const oob_confirm_t &peer_confirm
     ) final;
+#endif // /BLE_FEATURE_SECURE_CONNECTIONS
 
     /**
      * @see ::ble::PalSecurityManager::legacy_pairing_oob_request_reply
@@ -309,6 +285,7 @@ public:
         const oob_tk_t &oob_data
     ) final;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * @see ::ble::PalSecurityManager::confirmation_entered
      */
@@ -327,6 +304,7 @@ public:
      * @see ::ble::PalSecurityManager::generate_secure_connections_oob
      */
     ble_error_t generate_secure_connections_oob() final;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     /**
      * @see ::ble::PalSecurityManager::set_event_handler
@@ -347,51 +325,23 @@ public:
 
 private:
 
-    struct PrivacyControlBlock;
-    struct PrivacyClearResListControlBlock;
-    struct PrivacyAddDevToResListControlBlock;
-    struct PrivacyRemoveDevFromResListControlBlock;
-
-    // Queue control block to add device to resolving list
-    void queue_add_device_to_resolving_list(
-        advertising_peer_address_type_t peer_identity_address_type,
-        const address_t &peer_identity_address,
-        const irk_t &peer_irk
-    );
-
-    // Queue control block to remove device from resolving list
-    void queue_remove_device_from_resolving_list(
-        advertising_peer_address_type_t peer_identity_address_type,
-        const address_t &peer_identity_address
-    );
-
-    // Queue control block to clear resolving list
-    void queue_clear_resolving_list();
-
-    // Clear all control blocks
-    void clear_privacy_control_blocks();
-
-    // Queue a control block
-    void queue_privacy_control_block(PrivacyControlBlock *block);
-
-    // Try to dequeue and process the next control block
-    // cb_completed is set when the previous block has completed
-    void process_privacy_control_blocks(bool cb_completed);
-
+#if BLE_FEATURE_SIGNING
     void cleanup_peer_csrks();
+#endif // BLE_FEATURE_SIGNING
 
     PalSecurityManagerEventHandler *_pal_event_handler;
 
     bool _use_default_passkey;
     passkey_num_t _default_passkey;
-    bool _lesc_keys_generated;
-    uint8_t _public_key_x[SEC_ECC_KEY_LEN];
-
-    PrivacyControlBlock *_pending_privacy_control_blocks;
-    bool _processing_privacy_control_block;
+#if BLE_FEATURE_SECURE_CONNECTIONS
+    bool _lesc_keys_generated = false;
+    uint8_t _public_key_x[SEC_ECC_KEY_LEN] = {0};
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
     irk_t _irk;
+#if BLE_FEATURE_SIGNING
     csrk_t _csrk;
-    csrk_t *_peer_csrks[DM_CONN_MAX];
+    csrk_t *_peer_csrks[DM_CONN_MAX] = {0};
+#endif // BLE_FEATURE_SIGNING
 };
 
 } // namespace impl

@@ -537,7 +537,7 @@ static void ws_llc_mac_confirm_cb(const mac_api_t *api, const mcps_data_conf_t *
                 ws_llc_mpx_eapol_send(base, message);
             }
         } else {
-            if (neighbor_info.ws_neighbor && neighbor_info.neighbor && neighbor_info.neighbor->link_lifetime != WS_NEIGHBOR_LINK_TIMEOUT) {
+            if (neighbor_info.ws_neighbor && neighbor_info.neighbor && neighbor_info.neighbor->link_lifetime <= WS_NEIGHBOUR_DHCP_ENTRY_LIFETIME) {
                 //Remove temp neighbour
                 tr_debug("Remove Temp Entry by TX confirm");
                 mac_neighbor_table_neighbor_remove(mac_neighbor_info(interface), neighbor_info.neighbor);
@@ -729,8 +729,6 @@ static void ws_llc_data_indication_cb(const mac_api_t *api, const mcps_data_ind_
     ws_neighbor_class_rsl_in_calculate(neighbor_info.ws_neighbor, data->signal_dbm);
 
     if (neighbor_info.neighbor) {
-        //Refresh ETX dbm
-        etx_lqi_dbm_update(interface->id, data->mpduLinkQuality, data->signal_dbm, neighbor_info.neighbor->index, neighbor_info.neighbor->mac64);
         if (data->Key.SecurityLevel) {
             //SET trusted state
             mac_neighbor_table_trusted_neighbor(mac_neighbor_info(interface), neighbor_info.neighbor, true);
@@ -1261,6 +1259,16 @@ static void ws_llc_mpx_data_request(const mpx_api_t *api, const struct mcps_data
         return;
     }
 
+    if (!base->ie_params.hopping_schedule) {
+        tr_error("Missing FHSS configurations");
+        mcps_data_conf_t data_conf;
+        memset(&data_conf, 0, sizeof(mcps_data_conf_t));
+        data_conf.msduHandle = data->msduHandle;
+        data_conf.status = MLME_TRANSACTION_OVERFLOW;
+        user_cb->data_confirm(&base->mpx_data_base.mpx_api, &data_conf);
+        return;
+    }
+
     if (user_id == MPX_KEY_MANAGEMENT_ENC_USER_ID) {
         ws_llc_mpx_eapol_request(base, user_cb, data);
     } else if (user_id == MPX_LOWPAN_ENC_USER_ID) {
@@ -1645,9 +1653,10 @@ mpx_api_t *ws_llc_mpx_api_get(struct protocol_interface_info_entry *interface)
 int8_t ws_llc_asynch_request(struct protocol_interface_info_entry *interface, asynch_request_t *request)
 {
     llc_data_base_t *base = ws_llc_discover_by_interface(interface);
-    if (!base) {
+    if (!base || !base->ie_params.hopping_schedule) {
         return -1;
     }
+
 
     //Calculate IE Buffer size
     request->wh_requested_ie_list.fc_ie = false; //Never should not be a part Asynch message

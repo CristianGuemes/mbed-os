@@ -24,6 +24,16 @@
 #include "ble/gatt/GattAttribute.h"
 #include "ble/gatt/GattCallbackParamTypes.h"
 
+// Forward declare ble::impl::GattServer
+namespace ble {
+
+#if !defined(DOXYGEN_ONLY)
+namespace impl {
+class GattServer;
+}
+#endif // !defined(DOXYGEN_ONLY)
+}
+
 /**
  * @addtogroup ble
  * @{
@@ -1429,6 +1439,11 @@ public:
     GattCharacteristic(const GattCharacteristic &) = delete;
     GattCharacteristic& operator=(const GattCharacteristic &) = delete;
     
+    ~GattCharacteristic() {
+            delete _implicit_cccd;
+            _implicit_cccd = nullptr;
+    }
+
 public:
 
     /**
@@ -1565,6 +1580,17 @@ public:
     }
 
     /**
+     * Return the callback registered to handle client's write.
+     *
+     * @return the callback that handles client's write requests.
+     */
+    const FunctionPointerWithContext<GattWriteAuthCallbackParams *>&
+    getWriteAuthorizationCallback() const
+    {
+        return writeAuthorizationCallback;
+    }
+
+    /**
      * Register the read requests event handler.
      *
      * The callback registered is invoked when the client attempts to read the
@@ -1599,6 +1625,17 @@ public:
         void (T::*member)(GattReadAuthCallbackParams *)
     ) {
         readAuthorizationCallback.attach(object, member);
+    }
+
+    /**
+     * Return the callback registered to handle client's read.
+     *
+     * @return the callback that handles client's read requests.
+     */
+    const FunctionPointerWithContext<GattReadAuthCallbackParams *>&
+    getReadAuthorizationCallback() const
+    {
+        return readAuthorizationCallback;
     }
 
     /**
@@ -1714,7 +1751,7 @@ public:
      */
     uint8_t getDescriptorCount() const
     {
-        return _descriptorCount;
+        return (_implicit_cccd == nullptr? _descriptorCount : _descriptorCount+1);
     }
 
     /**
@@ -1750,15 +1787,44 @@ public:
      *
      * @return A pointer the requested descriptor if @p index is within the
      * range of the descriptor array or nullptr otherwise.
+     *
+     * @note if this characteristic has an implicitly-created CCCD this
+     * descriptor will be available at the highest index
+     * (ie: return of getDescriptorCount() - 1)
      */
     GattAttribute *getDescriptor(uint8_t index)
     {
-        if (index >= _descriptorCount) {
+
+        if(index == _descriptorCount) {
+            // If _implicit_cccd is nullptr, we want to return that anyway
+            return _implicit_cccd;
+        }
+        else if (index > _descriptorCount) {
             return nullptr;
         }
 
         return _descriptors[index];
     }
+
+
+private:
+
+    friend ble::impl::GattServer;
+
+#if !defined(DOXYGEN_ONLY)
+    /**
+     * Sets this GattCharacteristic's implicitly-created CCCD, if
+     * applicable.
+     *
+     * @note once this is called, the pointed-to GattAttribute
+     * is owned by this GattCharacteristic and will be deleted
+     * during this object's destructor
+     */
+    void setImplicitCCCD(GattAttribute *implicit_cccd) {
+        _implicit_cccd = implicit_cccd;
+    }
+#endif // !defined(DOXYGEN_ONLY)
+
 
 private:
 
@@ -1782,6 +1848,16 @@ private:
      * The number of descriptors in this characteristic.
      */
     uint8_t _descriptorCount;
+
+    /**
+     * Pointer to characteristic's implicit CCCD, if applicable
+     *
+     * @note this is only populated if the stack creates an implicit CCCD
+     * for this GattCharacteristic. If the descriptors array passed into
+     * the constructor includes a CCCD this field is left as nullptr to
+     * indicate the CCCD was explicitly created.
+     */
+    GattAttribute* _implicit_cccd = nullptr;
 
     /**
      * The registered callback handler for read authorization reply.

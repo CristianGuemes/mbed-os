@@ -220,6 +220,10 @@
             "crash-capture-enabled": true,
             "fatal-error-auto-reboot-enabled": true
         },
+        "NUCLEO_F412ZG": {
+            "crash-capture-enabled": true,
+            "fatal-error-auto-reboot-enabled": true
+        },
         "DISCO_F413ZH": {
             "crash-capture-enabled": true,
             "fatal-error-auto-reboot-enabled": true
@@ -235,7 +239,11 @@
             "stdio-convert-newlines": true,
             "stdio-baud-rate": 115200
         },
-		"PIC32CX": {
+        "MTS_DRAGONFLY_L471QG": {
+            "crash-capture-enabled": true,
+            "fatal-error-auto-reboot-enabled": true
+        },
+        "PIC32CX": {
             "stdio-baud-rate": 115200
         }
     }

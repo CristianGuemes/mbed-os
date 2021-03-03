@@ -212,6 +212,7 @@ public:
     // Pairing
     //
 
+#if BLE_ROLE_PERIPHERAL
     /**
      * Request pairing. This is called on the slave in response to a request from the master.
      * Upper layer shall either send a pairing response (send_pairing_response)
@@ -230,6 +231,7 @@ public:
         KeyDistribution initiator_dist,
         KeyDistribution responder_dist
     ) = 0;
+#endif
 
     /**
      * Indicate that the pairing has failed.
@@ -277,6 +279,7 @@ public:
         connection_handle_t connection
     ) = 0;
 
+#if BLE_ROLE_CENTRAL
     /**
      * Ask the stack to evaluate the security request received from the slave.
      * This might result in the stack enabling encryption, or pairing/re-pairing.
@@ -288,6 +291,7 @@ public:
         connection_handle_t connection,
         AuthenticationMask authentication
     ) = 0;
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     // Encryption
@@ -330,6 +334,7 @@ public:
         passkey_num_t passkey
     ) = 0;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Indicate that user confirmation is required to confirm matching
      * passkeys displayed on devices.
@@ -340,6 +345,7 @@ public:
     virtual void on_confirmation_request(
         connection_handle_t connection
     ) = 0;
+#endif
 
     /**
      * Request the passkey entered during pairing.
@@ -352,6 +358,7 @@ public:
         connection_handle_t connection
     ) = 0;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Indicate that a key has been pressed by the peer.
      *
@@ -374,6 +381,7 @@ public:
     virtual void on_secure_connections_oob_request(
         connection_handle_t connection
     ) = 0;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     /**
      * Request OOB data from the user application.
@@ -386,6 +394,7 @@ public:
         connection_handle_t connection
     ) = 0;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Send OOB data to the application for transport to the peer.
      *
@@ -399,11 +408,13 @@ public:
         const oob_lesc_value_t &random,
         const oob_confirm_t &confirm
     ) = 0;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     ////////////////////////////////////////////////////////////////////////////
     // Keys
     //
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Store the results of key generation of the stage 2 of secure connections pairing
      * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 3, Part H - 2.3.5.6.5
@@ -415,6 +426,7 @@ public:
         connection_handle_t connection,
         const ltk_t &ltk
     ) = 0;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     /**
      * Store the results of key distribution after LTK has been received.
@@ -491,6 +503,7 @@ public:
         const address_t &peer_identity_address
     ) = 0;
 
+#if BLE_FEATURE_SIGNING
     /**
      * Store the peer's CSRK after it has been distributed.
      *
@@ -501,6 +514,7 @@ public:
         connection_handle_t connection,
         const csrk_t &csrk
     ) = 0;
+#endif // BLE_FEATURE_SIGNING
 
     /**
      * Request the LTK since the peer is asking us to encrypt the link. We need to
@@ -560,59 +574,10 @@ public:
     virtual ble_error_t reset() = 0;
 
     ////////////////////////////////////////////////////////////////////////////
-    // Resolving list management
-    //
-    /**
-     * Return the number of address translation entries that can be stored by the
-     * subsystem.
-     *
-     * @warning: The number of entries is considered fixed.
-     *
-     * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 2, Part E: 7.8.41
-     * @return BLE_ERROR_NONE On success, else an error code indicating reason for failure
-     */
-    virtual uint8_t read_resolving_list_capacity() = 0;
-
-    /**
-     * Add a device definition into the resolving list of the LE subsystem.
-     *
-     * @param[in] peer_identity_address_type public/private indicator
-     * @param[in] peer_identity_address address of the device whose entry is to be added
-     * @param[in] peer_irk peer identity resolving key
-     * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 2, Part E: 7.8.38
-     * @return BLE_ERROR_NONE On success, else an error code indicating reason for failure
-     */
-    virtual ble_error_t add_device_to_resolving_list(
-        advertising_peer_address_type_t peer_identity_address_type,
-        const address_t &peer_identity_address,
-        const irk_t &peer_irk
-    ) = 0;
-
-    /**
-     * Add a device definition from the resolving list of the LE subsystem.
-     *
-     * @param[in] peer_identity_address_type public/private indicator
-     * @param[in] peer_identity_address address of the device whose entry is to be removed
-     * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 2, Part E: 7.8.39
-     * @return BLE_ERROR_NONE On success, else an error code indicating reason for failure
-     */
-    virtual ble_error_t remove_device_from_resolving_list(
-        advertising_peer_address_type_t peer_identity_address_type,
-        const address_t &peer_identity_address
-    ) = 0;
-
-    /**
-     * Remove all devices from the resolving list.
-     *
-     * @see BLUETOOTH SPECIFICATION Version 5.0 | Vol 2, Part E: 7.8.40
-     * @return BLE_ERROR_NONE On success, else an error code indicating reason for failure
-     */
-    virtual ble_error_t clear_resolving_list() = 0;
-
-    ////////////////////////////////////////////////////////////////////////////
     // Pairing
     //
 
+#if BLE_ROLE_CENTRAL
     /**
      * Send a pairing request to a slave.
      *
@@ -631,7 +596,9 @@ public:
         KeyDistribution initiator_dist,
         KeyDistribution responder_dist
     ) = 0;
+#endif // BLE_ROLE_CENTRAL
 
+#if BLE_ROLE_PERIPHERAL
     /**
      * Send a pairing response to a master.
      *
@@ -650,6 +617,7 @@ public:
         KeyDistribution initiator_dist,
         KeyDistribution responder_dist
     ) = 0;
+#endif // BLE_ROLE_PERIPHERAL
 
     /**
      * Cancel an ongoing pairing.
@@ -736,6 +704,7 @@ public:
         uint8_t max_encryption_key_size
     ) = 0;
 
+#if BLE_ROLE_PERIPHERAL
     /**
      * Request change of security level from the master. This is called by the slave when
      * it needs to elevate the security level as it can't change it itself. This will be
@@ -750,11 +719,13 @@ public:
         connection_handle_t connection,
         AuthenticationMask authentication
     ) = 0;
+#endif
 
     ////////////////////////////////////////////////////////////////////////////
     // Encryption
     //
 
+#if BLE_ROLE_CENTRAL
     /**
      * Enabled encryption using the LTK given. The EDIV and RAND will be sent to the peer and
      * used to identify the LTK. This is called by the master. This will refresh the key if
@@ -775,6 +746,7 @@ public:
         bool mitm
     ) = 0;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Enabled encryption using the LTK given on a connection established with secure
      * connections pairing.
@@ -789,6 +761,8 @@ public:
         const ltk_t &ltk,
         bool mitm
     ) = 0;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
+#endif // BLE_ROLE_CENTRAL
 
     /**
      * Encrypt data with a given key. This uses the facility on the controller to
@@ -801,28 +775,6 @@ public:
     virtual ble_error_t encrypt_data(
         const byte_array_t<16> &key,
         encryption_block_t &data
-    ) = 0;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Privacy
-    //
-
-    virtual ble_error_t set_private_address_timeout(
-        uint16_t timeout_in_seconds
-    ) = 0;
-
-    /**
-     * Retrieve the identity address used by the controller
-     *
-     * @param address Will contain the address retrieved.
-     * @param public_address will be true if the address is public and false
-     * otherwise.
-     * @return BLE_ERROR_NONE On success, else an error code indicating the reason
-     * of the failure
-     */
-    virtual ble_error_t get_identity_address(
-        address_t& address,
-        bool& public_address
     ) = 0;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -864,6 +816,19 @@ public:
     virtual ble_error_t set_irk(
         const irk_t &irk
     ) = 0;
+
+    /**
+     * Set the local identity address.
+     *
+     * @param[in] address identity address of the device
+     * @param[in] public_address true if a public address is used and false otherwise.
+     * @return BLE_ERROR_NONE On success, else an error code indicating reason for failure
+     */
+    virtual ble_error_t set_identity_address(
+        const address_t &address, bool public_address
+    ) = 0;
+
+#if BLE_FEATURE_SIGNING
     /**
      * Set the local CSRK.
      *
@@ -893,6 +858,7 @@ public:
     ) = 0;
 
     virtual ble_error_t remove_peer_csrk(connection_handle_t connection) = 0;
+#endif // BLE_FEATURE_SIGNING
 
     ////////////////////////////////////////////////////////////////////////////
     // Authentication
@@ -947,6 +913,7 @@ public:
         passkey_num_t passkey
     ) = 0;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Reply to a Secure Connections oob data request received from the EventHandler.
      *
@@ -963,6 +930,7 @@ public:
         const oob_lesc_value_t &peer_random,
         const oob_confirm_t &peer_confirm
     ) = 0;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     /**
      * Reply to a legacy pairing oob data request received from the EventHandler.
@@ -976,6 +944,7 @@ public:
         const oob_tk_t &oob_data
     ) = 0;
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /**
      * Notify the stack that the user has confirmed the values during numerical
      * comparison stage of pairing.
@@ -1002,11 +971,13 @@ public:
         ble::Keypress_t keypress
     ) = 0;
 
+
     /**
      * Generate local OOB data to be sent to the application which sends it to the peer.
      * @return BLE_ERROR_NONE On success, else an error code indicating reason for failure
      */
     virtual ble_error_t generate_secure_connections_oob() = 0;
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     /* Entry points for the underlying stack to report events back to the user. */
 

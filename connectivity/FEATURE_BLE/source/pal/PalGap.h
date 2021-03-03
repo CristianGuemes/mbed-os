@@ -21,6 +21,7 @@
 
 #include "platform/Callback.h"
 
+#include "ble/common/BLERoles.h"
 #include "source/pal/GapTypes.h"
 #include "source/pal/GapEvents.h"
 #include "ble/common/blecommon.h"
@@ -29,6 +30,8 @@ namespace ble {
 
 struct PalGapEventHandler {
 public:
+
+#if BLE_FEATURE_PHY_MANAGEMENT
     /**
      * @copydoc PalGap::EventHandler::onReadPhy
      */
@@ -38,7 +41,9 @@ public:
         ble::phy_t tx_phy,
         ble::phy_t rx_phy
     ) = 0;
+#endif // BLE_FEATURE_PHY_MANAGEMENT
 
+#if BLE_FEATURE_CONNECTABLE
     /**
      * @copydoc PalGap::EventHandler::onDataLengthChange
      */
@@ -47,7 +52,9 @@ public:
         uint16_t tx_size,
         uint16_t rx_size
     ) = 0;
+#endif
 
+#if BLE_FEATURE_PHY_MANAGEMENT
     /**
      * @copydoc PalGap::EventHandler::onPhyUpdateComplete
      */
@@ -57,60 +64,10 @@ public:
         ble::phy_t tx_phy,
         ble::phy_t rx_phy
      ) = 0;
+#endif // BLE_FEATURE_PHY_MANAGEMENT
 
-    /**
-     * Should be invoked by the PalGap implementation when an enhanced
-     * connection complete event happens.
-     *
-     * @param status hci_error_code::SUCCESS in case of success or an error
-     * code.
-     *
-     * @param connection_handle The handle of the connection created.
-     *
-     * @param own_role Indicate if the local device operates as slave or
-     * master.
-     *
-     * @param peer_address_type Type of address of the peer.
-     *
-     * @param peer_address Address of the peer connected.
-     *
-     * @param local_resolvable_private_address Resolvable private address
-     * being used by the controller. If not applicable, the address is full
-     * of zeroes.
-     *
-     * @param peer_resolvable_private_address Resolvable private address
-     * being used by the peer. If not applicable, the address is full of
-     * zeroes.
-     *
-     * @param connection_interval Interval between two connection events.
-     * Unit is 1.25ms.
-     *
-     * @param connection_latency Slave latency for the connection in number
-     * of connection events.
-     *
-     * @param supervision_timeout Connection supervision timeout. Unit is
-     * 10ms.
-     *
-     * @param master_clock_accuracy This parameter is only valid for a slave.
-     * On a master it must be set to 0x00.
-     *
-     * @note: See Bluetooth 5 Vol 2 PartE: 7.7.65.10 LE enhanced connection
-     * complete event.
-     */
-    virtual void on_enhanced_connection_complete(
-        hci_error_code_t status,
-        connection_handle_t connection_handle,
-        connection_role_t own_role,
-        connection_peer_address_type_t peer_address_type,
-        const address_t &peer_address,
-        const address_t &local_resolvable_private_address,
-        const address_t &peer_resolvable_private_address,
-        uint16_t connection_interval,
-        uint16_t connection_latency,
-        uint16_t supervision_timeout,
-        clock_accuracy_t master_clock_accuracy
-     ) = 0;
-
+#if BLE_FEATURE_EXTENDED_ADVERTISING
+#if BLE_ROLE_OBSERVER
     /** Called on advertising report event.
      *
      * @param event_type Type of advertising used.
@@ -145,7 +102,11 @@ public:
         uint8_t data_length,
         const uint8_t *data_size
      ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
+#endif // BLE_ROLE_OBSERVER
 
+#if BLE_FEATURE_PERIODIC_ADVERTISING
+#if BLE_ROLE_OBSERVER
     /** Called on advertising sync event.
      *
      * @param error SUCCESS if synchronisation was achieved.
@@ -193,10 +154,42 @@ public:
     virtual void on_periodic_advertising_sync_loss(
         sync_handle_t sync_handle
      ) = 0;
+#endif // BLE_FEATURE_PERIODIC_ADVERTISING
+#endif // BLE_ROLE_OBSERVER
+
+#if BLE_ROLE_OBSERVER
+    /**
+     * Called when scanning start
+     */
+    virtual void on_scan_started(bool success) = 0;
+
+    /**
+     * Called when scanning stop
+     */
+    virtual void on_scan_stopped(bool success) = 0;
+
 
     /** Called when scanning times out.
      */
     virtual void on_scan_timeout( ) = 0;
+#endif // BLE_ROLE_OBSERVER
+
+#if BLE_ROLE_BROADCASTER
+    /**
+     * Called when legacy advertising has been effectively started.
+     */
+    virtual void on_legacy_advertising_started() = 0;
+
+    /**
+     * Called when legacy advertising has been stopped.
+     */
+    virtual void on_legacy_advertising_stopped() = 0;
+
+#if BLE_FEATURE_EXTENDED_ADVERTISING
+    /**
+     * Called when extended advertising has been started.
+     */
+    virtual void on_advertising_set_started(const mbed::Span<const uint8_t>& handles) = 0;
 
     /** Called when advertising set stops advertising.
      *
@@ -223,7 +216,10 @@ public:
         connection_peer_address_type_t scanner_address_type,
         const address_t &address
      ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
+#endif // BLE_ROLE_BROADCASTER
 
+#if BLE_FEATURE_CONNECTABLE
     virtual void on_connection_update_complete(
         hci_error_code_t status,
         connection_handle_t connection_handle,
@@ -239,6 +235,7 @@ public:
         uint16_t connection_latency,
         uint16_t supervision_timeout
      ) = 0;
+#endif // BLE_FEATURE_CONNECTABLE
 };
 
 /**
@@ -309,6 +306,8 @@ public:
      */
     virtual ble_error_t set_random_address(const address_t &address) = 0;
 
+#if BLE_ROLE_BROADCASTER
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Set the random device address used by an advertising set.
      *
@@ -333,6 +332,7 @@ public:
         advertising_handle_t advertising_handle,
         const address_t &address
     ) = 0;
+#endif
 
     /**
      * Set the advertising parameters which will be used during the advertising
@@ -402,6 +402,7 @@ public:
         advertising_filter_policy_t advertising_filter_policy
     ) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Define the advertising parameters of an advertising set.
      *
@@ -478,7 +479,9 @@ public:
         uint8_t advertising_sid,
         bool scan_request_notification
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
+#if BLE_FEATURE_PERIODIC_ADVERTISING
     /**
      * Configure periodic advertising parameters of an advertising set.
      *
@@ -511,6 +514,7 @@ public:
         periodic_advertising_interval_t periodic_advertising_max,
         bool advertise_power
     ) = 0;
+#endif // BLE_FEATURE_PERIODIC_ADVERTISING
 
     /**
      * Set the data sends in advertising packet. If the advertising is
@@ -534,6 +538,7 @@ public:
         const advertising_data_t &advertising_data
     ) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Set data in advertising PDUs.
      *
@@ -572,7 +577,9 @@ public:
         uint8_t advertising_data_size,
         const uint8_t *advertising_data
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
+#if BLE_FEATURE_PERIODIC_ADVERTISING
     /**
      * Set the data used in periodic advertising PDUs.
      *
@@ -604,6 +611,7 @@ public:
         uint8_t advertising_data_size,
         const uint8_t *advertising_data
     ) = 0;
+#endif // BLE_FEATURE_PERIODIC_ADVERTISING
 
     /**
      * Set the data sends in scan response packets. If the advertising is
@@ -627,6 +635,7 @@ public:
         const advertising_data_t &scan_response_data
     ) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Set the data sends in extended scan response packets.  If the advertising
      * is currently enabled, the data shall be used when a new extended scan
@@ -659,6 +668,7 @@ public:
         uint8_t scan_response_data_size,
         const uint8_t *scan_response_data
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
     /**
      * Start or stop advertising.
@@ -702,6 +712,7 @@ public:
      */
     virtual ble_error_t advertising_enable(bool enable) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Start of stop advertising of extended advertising sets.
      *
@@ -744,7 +755,9 @@ public:
         const uint16_t *durations,
         const uint8_t *max_extended_advertising_events
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
+#if BLE_FEATURE_PERIODIC_ADVERTISING
     /**
      * Enable or disable periodic advertising of an advertising set.
      *
@@ -764,6 +777,7 @@ public:
         bool enable,
         advertising_handle_t advertising_handle
     ) = 0;
+#endif // BLE_FEATURE_PERIODIC_ADVERTISING
 
     /**
      * Query the maximum data length the controller supports in an advertising
@@ -806,6 +820,7 @@ public:
      */
     virtual uint8_t get_max_number_of_advertising_sets() = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Remove an advertising set from the controller.
      *
@@ -840,8 +855,10 @@ public:
      * command.
      */
     virtual ble_error_t clear_advertising_sets() = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
+#endif // BLE_ROLE_BROADCASTER
 
-
+#if BLE_ROLE_OBSERVER
     /**
      * Set the parameter of the scan process.
      *
@@ -877,6 +894,7 @@ public:
         scanning_filter_policy_t filter_policy
     ) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Set extended scan parameters to be used on advertising channels.
      *
@@ -913,6 +931,7 @@ public:
         const uint16_t *scan_interval,
         const uint16_t *scan_window
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
     /**
      * Start/stop scanning process.
@@ -940,6 +959,7 @@ public:
         bool filter_duplicates
     ) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Enable or disable extended scanning.
      *
@@ -967,7 +987,9 @@ public:
         uint16_t duration,
         uint16_t period
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
+#if BLE_FEATURE_PERIODIC_ADVERTISING
     /**
      * Synchronize an observer with a periodic advertising broadcaster.
      *
@@ -1112,7 +1134,10 @@ public:
      * @note We (wrongfully) assume that value doesn't change over time.
      */
     virtual uint8_t read_periodic_advertiser_list_size() = 0;
+#endif // BLE_FEATURE_PERIODIC_ADVERTISING
+#endif // BLE_ROLE_OBSERVER
 
+#if BLE_ROLE_CENTRAL
     /**
      * Create a new le connection to a connectable advertiser.
      *
@@ -1199,6 +1224,7 @@ public:
         uint16_t maximum_connection_event_length
     ) = 0;
 
+#if BLE_FEATURE_EXTENDED_ADVERTISING
     /**
      * Create a new le connection to a connectable advertiser.
      *
@@ -1291,6 +1317,7 @@ public:
         const uint16_t *minimum_connection_event_lengths,
         const uint16_t *maximum_connection_event_lengths
     ) = 0;
+#endif // BLE_FEATURE_EXTENDED_ADVERTISING
 
     /**
      * Cancel the ongoing connection creation process.
@@ -1302,7 +1329,9 @@ public:
      * command.
      */
     virtual ble_error_t cancel_connection_creation() = 0;
+#endif // BLE_ROLE_CENTRAL
 
+#if BLE_FEATURE_WHITELIST
     /**
      * Return the number of total whitelist entries that can be stored in the
      * le subsystem.
@@ -1373,7 +1402,9 @@ public:
         whitelist_address_type_t address_type,
         address_t address
     ) = 0;
+#endif // BLE_FEATURE_WHITELIST
 
+#if BLE_FEATURE_CONNECTABLE
     /**
      * Start a connection update procedure.
      *
@@ -1548,27 +1579,7 @@ public:
         connection_handle_t connection,
         local_disconnection_reason_t disconnection_reason
     ) = 0;
-
-    /** Check if privacy feature is supported by implementation
-     *
-     * @return true if privacy is supported, false otherwise.
-     *
-     * @note: See Bluetooth 5 Vol 3 Part C: 10.7 Privacy feature.
-     */
-    virtual bool is_privacy_supported() = 0;
-
-    /** Enable or disable private addresses resolution
-     *
-     * @param enable whether to enable private addresses resolution
-     *
-     * @return BLE_ERROR_NONE if the request has been successfully sent or the
-     * appropriate error otherwise.
-     *
-     * @note: See Bluetooth 5 Vol 2 PartE: 7.8.44 LE Set Address Resolution Enable command.
-     */
-    virtual ble_error_t set_address_resolution(
-        bool enable
-    ) = 0;
+#endif
 
     /**
      * Checked support for a feature in the link controller.
@@ -1580,6 +1591,7 @@ public:
         controller_supported_features_t feature
     ) = 0;
 
+#if BLE_FEATURE_PHY_MANAGEMENT
     /**
     * @see PalGap::readPhy
     */
@@ -1602,6 +1614,7 @@ public:
         const phy_set_t &rx_phys,
         coded_symbol_per_bit_t coded_symbol
     ) = 0;
+#endif // BLE_FEATURE_PHY_MANAGEMENT
 
     /**
      * Register a callback which will handle PalGap events.

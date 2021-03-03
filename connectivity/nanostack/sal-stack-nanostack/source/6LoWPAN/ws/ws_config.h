@@ -130,14 +130,37 @@ extern uint8_t DEVICE_MIN_SENS;
 
 
 /* Multicast MPL data message parameters
- * IMIN = 10 seconds, IMAX = 3 doublings
  */
+#define MPL_SAFE_HOP_COUNT 6
 
-#define DATA_MESSAGE_IMIN 10
-#define DATA_MESSAGE_TIMER_EXPIRATIONS 3
-#define DATA_MESSAGE_IMAX 80
-#define DATA_MESSAGE_K 8
-#define MPL_SEED_SET_ENTRY_TIMEOUT (DATA_MESSAGE_IMAX * 24 * 4) // 10 seconds per hop making this 240 seconds
+/*Border router override to optimize the multicast startup*/
+#define MPL_BORDER_ROUTER_MIN_EXPIRATIONS 2
+#define MPL_BORDER_ROUTER_MAXIMUM_IMAX 40
+
+/*Small network size*/
+#define MPL_SMALL_IMIN 1
+#define MPL_SMALL_IMAX 10
+#define MPL_SMALL_EXPIRATIONS 1
+#define MPL_SMALL_K 8
+#define MPL_SMALL_SEED_LIFETIME (MPL_SMALL_IMAX * MPL_SAFE_HOP_COUNT * (MPL_SMALL_EXPIRATIONS + 1)) // time that packet should get to safe distance
+/*Medium network size*/
+#define MPL_MEDIUM_IMIN 1
+#define MPL_MEDIUM_IMAX 32
+#define MPL_MEDIUM_EXPIRATIONS 1
+#define MPL_MEDIUM_K 8
+#define MPL_MEDIUM_SEED_LIFETIME (MPL_MEDIUM_IMAX * MPL_SAFE_HOP_COUNT * (MPL_MEDIUM_EXPIRATIONS + 1)) // time that packet should get to safe distance
+/*Large network size*/
+#define MPL_LARGE_IMIN 5
+#define MPL_LARGE_IMAX 40
+#define MPL_LARGE_EXPIRATIONS 2
+#define MPL_LARGE_K 8
+#define MPL_LARGE_SEED_LIFETIME (MPL_LARGE_IMAX * MPL_SAFE_HOP_COUNT * (MPL_LARGE_EXPIRATIONS + 1)) // time that packet should get to safe distance
+/*xtra large network size*/
+#define MPL_XLARGE_IMIN 10
+#define MPL_XLARGE_IMAX 80
+#define MPL_XLARGE_EXPIRATIONS 2
+#define MPL_XLARGE_K 8
+#define MPL_XLARGE_SEED_LIFETIME (MPL_XLARGE_IMAX * MPL_SAFE_HOP_COUNT * (MPL_XLARGE_EXPIRATIONS + 1)) // time that packet should get to safe distance
 
 /* DHCP client timeout configuration values
  *
@@ -174,8 +197,8 @@ extern uint8_t DEVICE_MIN_SENS;
 #define FRAME_COUNTER_STORE_INTERVAL        60          // Time interval (on seconds) between checking if frame counter storing is needed
 #define FRAME_COUNTER_STORE_FORCE_INTERVAL  (3600 * 20) // Time interval (on seconds) before frame counter storing is forced (if no other storing operations triggered)
 #define FRAME_COUNTER_STORE_TRIGGER         5           // Delay (on seconds) before storing, when storing of frame counters is triggered
-#define FRAME_COUNTER_INCREMENT             1000        // How much frame counter is incremented on start up
-#define FRAME_COUNTER_STORE_THRESHOLD       800         // How much frame counter must increment before it is stored
+#define FRAME_COUNTER_INCREMENT             1000000     // How much frame counter is incremented on start up
+#define FRAME_COUNTER_STORE_THRESHOLD       994999      // How much frame counter must increment before it is stored
 
 
 /*
@@ -198,6 +221,13 @@ extern uint8_t DEVICE_MIN_SENS;
 #define WS_PARENT_LIST_MAX_PAN_IN_DISCOVERY 5  // During discovery state how many neighbours per pan
 #define WS_PARENT_LIST_MAX_PAN_IN_ACTIVE 2     // During active state two nodes per pan is allowed
 
+#define WS_CONGESTION_PACKET_SIZE 500           // Packet length for calculate how much heap message queue can fit
+#define WS_CONGESTION_QUEUE_DELAY 60            // Define message queue max length for given delay. This value is multiple by packet/seconds
+#define WS_CONGESTION_RED_DROP_PROBABILITY 10 //10.0%
+#define WS_CONGESTION_BR_MIN_QUEUE_SIZE 85000 / WS_CONGESTION_PACKET_SIZE
+#define WS_CONGESTION_BR_MAX_QUEUE_SIZE 600000 / WS_CONGESTION_PACKET_SIZE
+#define WS_CONGESTION_NODE_MIN_QUEUE_SIZE 10000 / WS_CONGESTION_PACKET_SIZE
+#define WS_CONGESTION_NODE_MAX_QUEUE_SIZE 85000 / WS_CONGESTION_PACKET_SIZE
 /*
  * Modifications for base specification.
  *
@@ -219,7 +249,7 @@ extern uint8_t DEVICE_MIN_SENS;
 #define SEC_PROT_TIMER_EXPIRATIONS 2        // Number of retries
 
 // Maximum number of simultaneous security negotiations
-#define MAX_SIMULTANEOUS_SECURITY_NEGOTIATIONS_SMALL     3
+#define MAX_SIMULTANEOUS_SECURITY_NEGOTIATIONS_SMALL     20
 #define MAX_SIMULTANEOUS_SECURITY_NEGOTIATIONS_MEDIUM    20
 #define MAX_SIMULTANEOUS_SECURITY_NEGOTIATIONS_LARGE     50
 

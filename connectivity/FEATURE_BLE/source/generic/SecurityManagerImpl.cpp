@@ -16,6 +16,8 @@
  * limitations under the License.
  */
 
+#if BLE_FEATURE_SECURITY
+
 #include "ble/BLE.h"
 #include "ble/common/BLERoles.h"
 
@@ -134,7 +136,7 @@ ble_error_t SecurityManager::init(
 
 #if BLE_FEATURE_PRIVACY
     // set the local identity address and irk
-    if (result != BLE_ERROR_NONE) {
+    if (result == BLE_ERROR_NONE) {
     	result = init_identity();
     }
 #endif // BLE_FEATURE_PRIVACY
@@ -241,7 +243,7 @@ ble_error_t SecurityManager::generateWhitelistFromBondTable(::ble::whitelist_t *
 // Pairing
 //
 
-
+#if BLE_ROLE_CENTRAL
 ble_error_t SecurityManager::requestPairing(connection_handle_t connection)
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
@@ -295,8 +297,9 @@ ble_error_t SecurityManager::requestPairing(connection_handle_t connection)
         responder_distribution
     );
 }
+#endif // BLE_ROLE_CENTRAL
 
-
+#if BLE_ROLE_PERIPHERAL
 ble_error_t SecurityManager::acceptPairingRequest(connection_handle_t connection)
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
@@ -355,6 +358,7 @@ ble_error_t SecurityManager::acceptPairingRequest(connection_handle_t connection
         responder_distribution
     );
 }
+#endif
 
 
 ble_error_t SecurityManager::cancelPairingRequest(connection_handle_t connection)
@@ -403,7 +407,7 @@ ble_error_t SecurityManager::getPeerIdentity(connection_handle_t connection)
 // Feature support
 //
 
-
+#if BLE_FEATURE_SECURE_CONNECTIONS
 ble_error_t SecurityManager::allowLegacyPairing(bool allow)
 {
     _legacy_pairing_allowed = allow;
@@ -415,6 +419,7 @@ ble_error_t SecurityManager::getSecureConnectionsSupport(bool *enabled)
 {
     return _pal.get_secure_connections_support(*enabled);
 }
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
 ////////////////////////////////////////////////////////////////////////////
 // Security settings
@@ -483,11 +488,13 @@ ble_error_t SecurityManager::setLinkSecurity(
         case SECURITY_MODE_ENCRYPTION_WITH_MITM:
             return setLinkEncryption(connection, link_encryption_t::ENCRYPTED_WITH_MITM);
 
+#if BLE_FEATURE_SIGNING
         case SECURITY_MODE_SIGNED_NO_MITM:
             return getSigningKey(connection, false);
 
         case SECURITY_MODE_SIGNED_WITH_MITM:
             return getSigningKey(connection, true);
+#endif // BLE_FEATURE_SIGNING
 
         default:
             return BLE_ERROR_INVALID_PARAM;
@@ -533,9 +540,17 @@ ble_error_t SecurityManager::enableSigning(
             /* create keys if needed and exchange them */
             init_signing();
             if (cb->is_master) {
+#if BLE_ROLE_CENTRAL
                 return requestPairing(connection);
+#else
+                return BLE_ERROR_NOT_IMPLEMENTED;
+#endif
             } else {
+#if BLE_ROLE_PERIPHERAL
                 return slave_security_request(connection);
+#else
+                return BLE_ERROR_NOT_IMPLEMENTED;
+#endif
             }
         }
     } else {
@@ -700,6 +715,7 @@ ble_error_t SecurityManager::setEncryptionKeyRequirements(
 // Keys
 //
 
+#if BLE_FEATURE_SIGNING
 ble_error_t SecurityManager::getSigningKey(connection_handle_t connection, bool authenticated)
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
@@ -728,23 +744,36 @@ ble_error_t SecurityManager::getSigningKey(connection_handle_t connection, bool 
         if (authenticated) {
             return requestAuthentication(connection);
         } else if (cb->is_master) {
+#if BLE_ROLE_CENTRAL
             return requestPairing(connection);
+#else
+            return BLE_ERROR_NOT_IMPLEMENTED;
+#endif
         } else {
+#if BLE_ROLE_PERIPHERAL
             return slave_security_request(connection);
+#else
+            return BLE_ERROR_NOT_IMPLEMENTED;
+#endif
         }
     }
 }
+#endif // BLE_FEATURE_SIGNING
 
 ////////////////////////////////////////////////////////////////////////////
 // Privacy
 //
 
-
+#if BLE_FEATURE_PRIVACY
 ble_error_t SecurityManager::setPrivateAddressTimeout(uint16_t timeout_in_seconds)
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
-    return _pal.set_private_address_timeout(timeout_in_seconds);
+    _private_address_controller.set_timeout(
+        resolvable_address_timeout_t(timeout_in_seconds)
+    );
+    return BLE_ERROR_NONE;
 }
+#endif // BLE_FEATURE_PRIVACY
 
 ////////////////////////////////////////////////////////////////////////////
 // Authentication
@@ -774,9 +803,17 @@ ble_error_t SecurityManager::requestAuthentication(connection_handle_t connectio
     } else {
         cb->mitm_requested = true;
         if (cb->is_master) {
+#if BLE_ROLE_CENTRAL
             return requestPairing(connection);
+#else
+            return BLE_ERROR_NOT_IMPLEMENTED;
+#endif
         } else {
+#if BLE_ROLE_PERIPHERAL
             return slave_security_request(connection);
+#else
+            return BLE_ERROR_NOT_IMPLEMENTED;
+#endif
         }
     }
 }
@@ -805,6 +842,7 @@ ble_error_t SecurityManager::generateOOB(
         return status;
     }
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
     /* Secure connections. Avoid generating if we're already waiting for it.
      * If a local random is set to 0 it means we're already calculating. */
     if (!is_all_zeros(_oob_local_random)) {
@@ -827,6 +865,7 @@ ble_error_t SecurityManager::generateOOB(
     } else {
         return BLE_STACK_BUSY;
     }
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
     return BLE_ERROR_NONE;
 }
@@ -854,7 +893,7 @@ ble_error_t SecurityManager::setOOBDataUsage(
     }
 }
 
-
+#if BLE_FEATURE_SECURE_CONNECTIONS
 ble_error_t SecurityManager::confirmationEntered(
     connection_handle_t connection,
     bool confirmation
@@ -863,7 +902,7 @@ ble_error_t SecurityManager::confirmationEntered(
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
     return _pal.confirmation_entered(connection, confirmation);
 }
-
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
 ble_error_t SecurityManager::passkeyEntered(
     connection_handle_t connection,
@@ -877,7 +916,7 @@ ble_error_t SecurityManager::passkeyEntered(
     );
 }
 
-
+#if BLE_FEATURE_SECURE_CONNECTIONS
 ble_error_t SecurityManager::sendKeypressNotification(
     connection_handle_t connection,
     ble::Keypress_t keypress
@@ -886,6 +925,7 @@ ble_error_t SecurityManager::sendKeypressNotification(
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
     return _pal.send_keypress_notification(connection, keypress);
 }
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
 
 ble_error_t SecurityManager::legacyPairingOobReceived(
@@ -923,7 +963,7 @@ ble_error_t SecurityManager::legacyPairingOobReceived(
     return BLE_ERROR_NONE;
 }
 
-
+#if BLE_FEATURE_SECURE_CONNECTIONS
 ble_error_t SecurityManager::oobReceived(
     const address_t *address,
     const oob_lesc_value_t *random,
@@ -940,6 +980,7 @@ ble_error_t SecurityManager::oobReceived(
 
     return BLE_ERROR_INVALID_PARAM;
 }
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
 ////////////////////////////////////////////////////////////////////////////
 // Helper functions
@@ -977,13 +1018,13 @@ ble_error_t SecurityManager::init_database(
     return BLE_ERROR_NONE;
 }
 
-
+#if BLE_FEATURE_PRIVACY
 ble_error_t SecurityManager::init_resolving_list()
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
 
     /* match the resolving list to the currently stored set of IRKs */
-    uint8_t resolving_list_capacity = _pal.read_resolving_list_capacity();
+    uint8_t resolving_list_capacity = _private_address_controller.read_resolving_list_capacity();
     auto* identity_list_p =
         new (std::nothrow) SecurityEntryIdentity_t[resolving_list_capacity];
 
@@ -1003,8 +1044,9 @@ ble_error_t SecurityManager::init_resolving_list()
 
     return BLE_ERROR_NONE;
 }
+#endif // BLE_FEATURE_PRIVACY
 
-
+#if BLE_FEATURE_SIGNING
 ble_error_t SecurityManager::init_signing()
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
@@ -1012,7 +1054,7 @@ ble_error_t SecurityManager::init_signing()
     sign_count_t local_sign_counter = _db->get_local_sign_counter();
 
     csrk_t csrk;
-    if (!pcsrk) {
+    if (!pcsrk || *pcsrk == csrk_t{}) {
         ble_error_t ret = get_random_data(csrk.data(), csrk.size());
         if (ret != BLE_ERROR_NONE) {
             return ret;
@@ -1025,16 +1067,36 @@ ble_error_t SecurityManager::init_signing()
 
     return _pal.set_csrk(*pcsrk, local_sign_counter);
 }
+#endif // BLE_FEATURE_SIGNING
 
-
+#if BLE_FEATURE_PRIVACY
 ble_error_t SecurityManager::init_identity()
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
     const irk_t *pirk = nullptr;
 
+    ble::Gap& gap = BLE::Instance().gap();
+
     irk_t irk = _db->get_local_irk();
+    address_t identity_address;
+    bool public_identity_address = false;
     if (irk != irk_t()) {
         pirk = &irk;
+        public_identity_address = _db->is_local_identity_address_public();
+        identity_address = _db->get_local_identity_address();
+
+        if (!_db->is_local_identity_address_public()) {
+            // Some controllers doesn't store their random static address and
+            // instead generates them at each reboot.
+            // The code should replace the random static address with the identity
+            // address if this is the case.
+            if (_db->get_local_identity_address() != gap.getRandomStaticAddress()) {
+                ble_error_t err = gap.setRandomStaticAddress(_db->get_local_identity_address());
+                if (err) {
+                    return err;
+                }
+            }
+        }
     } else {
         ble_error_t ret = get_random_data(irk.data(), irk.size());
         if (ret != BLE_ERROR_NONE) {
@@ -1042,18 +1104,19 @@ ble_error_t SecurityManager::init_identity()
         }
 
         pirk = &irk;
-        address_t identity_address;
-        bool public_address;
-        ret = _pal.get_identity_address(identity_address, public_address);
-        if (ret != BLE_ERROR_NONE) {
-            return ret;
-        }
-        _db->set_local_identity(irk, identity_address, public_address);
+        public_identity_address = false;
+        identity_address = gap.getRandomStaticAddress();
+        _db->set_local_identity(irk, identity_address, public_identity_address);
     }
 
-    return _pal.set_irk(*pirk);
+    auto err = _pal.set_irk(*pirk);
+    if (!err) {
+        _private_address_controller.set_local_irk(*pirk);
+        _pal.set_identity_address(identity_address, public_identity_address);
+    }
+    return err;
 }
-
+#endif // BLE_FEATURE_PRIVACY
 
 ble_error_t SecurityManager::get_random_data(uint8_t *buffer, size_t size)
 {
@@ -1062,7 +1125,7 @@ ble_error_t SecurityManager::get_random_data(uint8_t *buffer, size_t size)
     while (size) {
         /* fill out the buffer by reading the random data in chunks
          * and copying it until reaching the set size */
-        size_t copy_size = std::max(size, random_data.size());
+        size_t copy_size = std::min(size, random_data.size());
         ble_error_t ret = _pal.get_random_data(random_data);
         if (ret != BLE_ERROR_NONE) {
             return ret;
@@ -1076,6 +1139,7 @@ ble_error_t SecurityManager::get_random_data(uint8_t *buffer, size_t size)
 }
 
 
+#if BLE_ROLE_PERIPHERAL
 ble_error_t SecurityManager::slave_security_request(connection_handle_t connection)
 {
     if (!_db) return BLE_ERROR_INITIALIZATION_INCOMPLETE;
@@ -1087,6 +1151,7 @@ ble_error_t SecurityManager::slave_security_request(connection_handle_t connecti
     link_authentication.set_mitm(cb->mitm_requested);
     return _pal.slave_security_request(connection, link_authentication);
 }
+#endif // BLE_ROLE_PERIPHERAL
 
 
 ble_error_t SecurityManager::enable_encryption(connection_handle_t connection)
@@ -1103,6 +1168,7 @@ ble_error_t SecurityManager::enable_encryption(connection_handle_t connection)
     }
 
     if (cb->is_master) {
+#if BLE_ROLE_CENTRAL
         if (flags->ltk_stored) {
             _db->get_entry_peer_keys(
                 mbed::callback(this, &SecurityManager::enable_encryption_cb),
@@ -1112,12 +1178,19 @@ ble_error_t SecurityManager::enable_encryption(connection_handle_t connection)
         } else {
             return requestPairing(connection);
         }
+#else
+        return BLE_ERROR_NOT_IMPLEMENTED;
+#endif // BLE_ROLE_CENTRAL
     } else {
+#if BLE_ROLE_PERIPHERAL
         return slave_security_request(connection);
+#else
+        return BLE_ERROR_NOT_IMPLEMENTED;
+#endif // BLE_ROLE_PERIPHERAL
     }
 }
 
-
+#if BLE_ROLE_CENTRAL
 void SecurityManager::enable_encryption_cb(
     SecurityDb::entry_handle_t db_entry,
     const SecurityEntryKeys_t* entryKeys
@@ -1135,14 +1208,17 @@ void SecurityManager::enable_encryption_cb(
     }
 
     if (entryKeys) {
+#if BLE_FEATURE_SECURE_CONNECTIONS
         if (flags->secure_connections_paired) {
             _pal.enable_encryption(cb->connection, entryKeys->ltk, flags->ltk_mitm_protected);
-        } else {
+        } else
+#endif
+        {
             _pal.enable_encryption(cb->connection, entryKeys->ltk, entryKeys->rand, entryKeys->ediv, flags->ltk_mitm_protected);
         }
     }
 }
-
+#endif
 
 void SecurityManager::set_ltk_cb(
     SecurityDb::entry_handle_t db_entry,
@@ -1172,7 +1248,7 @@ void SecurityManager::set_ltk_cb(
     }
 }
 
-
+#if BLE_FEATURE_SIGNING
 void SecurityManager::set_peer_csrk_cb(
     SecurityDb::entry_handle_t db_entry,
     const SecurityEntrySigning_t* signing
@@ -1219,7 +1295,7 @@ void SecurityManager::return_csrk_cb(
         flags->csrk_mitm_protected
     );
 }
-
+#endif // BLE_FEATURE_SIGNING
 
 void SecurityManager::update_oob_presence(connection_handle_t connection)
 {
@@ -1342,7 +1418,7 @@ void SecurityManager::on_security_entry_retrieved(
 
     typedef advertising_peer_address_type_t address_type_t;
 #if BLE_FEATURE_PRIVACY
-    _pal.add_device_to_resolving_list(
+    _private_address_controller.add_device_to_resolving_list(
         identity->identity_address_is_public ?
             address_type_t::PUBLIC :
             address_type_t::RANDOM,
@@ -1360,9 +1436,10 @@ void SecurityManager::on_identity_list_retrieved(
 {
     typedef advertising_peer_address_type_t address_type_t;
 
-    _pal.clear_resolving_list();
+#if BLE_FEATURE_PRIVACY
+    _private_address_controller.clear_resolving_list();
     for (size_t i = 0; i < count; ++i) {
-        _pal.add_device_to_resolving_list(
+        _private_address_controller.add_device_to_resolving_list(
             identity_list[i].identity_address_is_public ?
                 address_type_t::PUBLIC :
                 address_type_t::RANDOM,
@@ -1370,6 +1447,7 @@ void SecurityManager::on_identity_list_retrieved(
             identity_list[i].irk
         );
     }
+#endif // BLE_FEATURE_PRIVACY
 
     delete [] identity_list.data();
 }
@@ -1380,7 +1458,7 @@ void SecurityManager::on_identity_list_retrieved(
 // Pairing
 //
 
-
+#if BLE_ROLE_PERIPHERAL
 void SecurityManager::on_pairing_request(
     connection_handle_t connection,
     bool use_oob,
@@ -1411,7 +1489,7 @@ void SecurityManager::on_pairing_request(
         acceptPairingRequest(connection);
     }
 }
-
+#endif // BLE_ROLE_PERIPHERAL
 
 void SecurityManager::on_pairing_error(
     connection_handle_t connection,
@@ -1475,7 +1553,7 @@ void SecurityManager::on_valid_mic_timeout(connection_handle_t connection)
     (void)connection;
 }
 
-
+#if BLE_FEATURE_SIGNING
 void SecurityManager::on_signed_write_received(
     connection_handle_t connection,
     sign_count_t sign_counter
@@ -1508,9 +1586,13 @@ void SecurityManager::on_signed_write_verification_failure(
         if (cb->csrk_failures == 3) {
             cb->csrk_failures = 0;
             if (cb->is_master) {
+#if BLE_ROLE_CENTRAL
                 requestPairing(connection);
+#endif
             } else {
+#if BLE_ROLE_PERIPHERAL
                 slave_security_request(connection);
+#endif
             }
         }
     }
@@ -1522,8 +1604,9 @@ void SecurityManager::on_signed_write()
     MBED_ASSERT(_db);
     _db->set_local_sign_counter(_db->get_local_sign_counter() + 1);
 }
+#endif // BLE_FEATURE_SIGNING
 
-
+#if BLE_ROLE_CENTRAL
 void SecurityManager::on_slave_security_request(
     connection_handle_t connection,
     AuthenticationMask authentication
@@ -1559,6 +1642,7 @@ void SecurityManager::on_slave_security_request(
         enable_encryption(connection);
     }
 }
+#endif // BLE_ROLE_CENTRAL
 
 ////////////////////////////////////////////////////////////////////////////
 // Encryption
@@ -1592,7 +1676,9 @@ void SecurityManager::on_link_encryption_result(
         cb->authenticated = true;
         cb->encrypted = true;
 
-    } else if (result == link_encryption_t::NOT_ENCRYPTED
+    }
+#if BLE_ROLE_CENTRAL
+    else if (result == link_encryption_t::NOT_ENCRYPTED
                && cb->encryption_requested
                && !cb->encryption_failed) {
 
@@ -1603,6 +1689,7 @@ void SecurityManager::on_link_encryption_result(
         /* don't return an event yet since we are retrying */
         return;
     }
+#endif // BLE_ROLE_CENTRAL
 
     eventHandler->linkEncryptionResult(connection, result);
 }
@@ -1632,54 +1719,11 @@ void SecurityManager::on_passkey_display(
     eventHandler->passkeyDisplay(connection, PasskeyAscii(passkey).value());
 }
 
-
-void SecurityManager::on_keypress_notification(
-    connection_handle_t connection,
-    ble::Keypress_t keypress
-)
-{
-    set_mitm_performed(connection);
-    eventHandler->keypressNotification(connection, keypress);
-}
-
-
 void SecurityManager::on_passkey_request(connection_handle_t connection)
 {
     set_mitm_performed(connection);
     eventHandler->passkeyRequest(connection);
 }
-
-
-void SecurityManager::on_confirmation_request(connection_handle_t connection)
-{
-    set_mitm_performed(connection);
-    eventHandler->confirmationRequest(connection);
-}
-
-
-void SecurityManager::on_secure_connections_oob_request(connection_handle_t connection)
-{
-    set_mitm_performed(connection);
-
-    ControlBlock_t *cb = get_control_block(connection);
-    if (!cb) {
-        return;
-    }
-
-    SecurityDistributionFlags_t* flags = _db->get_distribution_flags(cb->db_entry);
-    if (!flags) {
-        return;
-    }
-
-    if (flags->peer_address == _oob_peer_address) {
-        _pal.secure_connections_oob_request_reply(connection, _oob_local_random, _oob_peer_random, _oob_peer_confirm);
-        /* do not re-use peer OOB */
-        set_all_zeros(_oob_peer_address);
-    } else {
-        _pal.cancel_pairing(connection, pairing_failure_t::OOB_NOT_AVAILABLE);
-    }
-}
-
 
 void SecurityManager::on_legacy_pairing_oob_request(connection_handle_t connection)
 {
@@ -1713,6 +1757,44 @@ void SecurityManager::on_legacy_pairing_oob_request(connection_handle_t connecti
     }
 }
 
+#if BLE_FEATURE_SECURE_CONNECTIONS
+void SecurityManager::on_keypress_notification(
+    connection_handle_t connection,
+    ble::Keypress_t keypress
+)
+{
+    set_mitm_performed(connection);
+    eventHandler->keypressNotification(connection, keypress);
+}
+
+void SecurityManager::on_confirmation_request(connection_handle_t connection)
+{
+    set_mitm_performed(connection);
+    eventHandler->confirmationRequest(connection);
+}
+
+void SecurityManager::on_secure_connections_oob_request(connection_handle_t connection)
+{
+    set_mitm_performed(connection);
+
+    ControlBlock_t *cb = get_control_block(connection);
+    if (!cb) {
+        return;
+    }
+
+    SecurityDistributionFlags_t* flags = _db->get_distribution_flags(cb->db_entry);
+    if (!flags) {
+        return;
+    }
+
+    if (flags->peer_address == _oob_peer_address) {
+        _pal.secure_connections_oob_request_reply(connection, _oob_local_random, _oob_peer_random, _oob_peer_confirm);
+        /* do not re-use peer OOB */
+        set_all_zeros(_oob_peer_address);
+    } else {
+        _pal.cancel_pairing(connection, pairing_failure_t::OOB_NOT_AVAILABLE);
+    }
+}
 
 void SecurityManager::on_secure_connections_oob_generated(
     const oob_lesc_value_t &random,
@@ -1722,12 +1804,13 @@ void SecurityManager::on_secure_connections_oob_generated(
     eventHandler->oobGenerated(&_oob_local_address, &random, &confirm);
     _oob_local_random = random;
 }
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
 ////////////////////////////////////////////////////////////////////////////
 // Keys
 //
 
-
+#if BLE_FEATURE_SECURE_CONNECTIONS
 void SecurityManager::on_secure_connections_ltk_generated(
     connection_handle_t connection,
     const ltk_t &ltk
@@ -1750,6 +1833,7 @@ void SecurityManager::on_secure_connections_ltk_generated(
     _db->set_entry_peer_ltk(cb->db_entry, ltk);
     _db->set_entry_local_ltk(cb->db_entry, ltk);
 }
+#endif // BLE_FEATURE_SECURE_CONNECTIONS
 
 
 void SecurityManager::on_keys_distributed_ltk(
@@ -1865,7 +1949,7 @@ void SecurityManager::on_keys_distributed_bdaddr(
     );
 }
 
-
+#if BLE_FEATURE_SIGNING
 void SecurityManager::on_keys_distributed_csrk(
     connection_handle_t connection,
     const csrk_t &csrk
@@ -1891,6 +1975,7 @@ void SecurityManager::on_keys_distributed_csrk(
         flags->csrk_mitm_protected
     );
 }
+#endif // BLE_FEATURE_SIGNING
 
 
 void SecurityManager::on_ltk_request(
@@ -1912,7 +1997,7 @@ void SecurityManager::on_ltk_request(
 
     _db->get_entry_local_keys(
         mbed::callback(this, &SecurityManager::set_ltk_cb),
-        cb->db_entry,
+        &cb->db_entry,
         ediv,
         rand
     );
@@ -2057,3 +2142,5 @@ void SecurityManager::setSecurityManagerEventHandler(EventHandler* handler)
 
 } /* namespace impl */
 } /* namespace ble */
+
+#endif // BLE_FEATURE_SECURITY
