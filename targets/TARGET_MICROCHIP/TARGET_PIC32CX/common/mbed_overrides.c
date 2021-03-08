@@ -26,6 +26,7 @@
 #include "device_peripherals.h"
 #include "device.h"
 #include "mpu_api.h"
+#include "interrupt_sam_nvic.h"
 
 void portable_delay_cycles(unsigned long n);
 
@@ -70,9 +71,20 @@ void portable_delay_cycles(unsigned long n)
 
 void wait_ns(unsigned int ns)
 {
-    uint32_t count = cpu_us_2_cy((ns - 1000) / 1000, SystemCoreClock);
+    uint32_t count;
+    uint32_t irq_st;
 
-    if (count) {
-        portable_delay_cycles(count);
+    if (ns < 1000) {
+        count = 1;
+    } else {
+        count = cpu_us_2_cy(ns / 1000, SystemCoreClock);
+    }
+
+    irq_st = Is_global_interrupt_enabled();
+
+    Disable_global_interrupt();
+    portable_delay_cycles(count);
+    if (irq_st) {
+        Enable_global_interrupt();
     }
 }
