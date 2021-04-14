@@ -34,6 +34,10 @@
 
 #if TARGET_NAME==PIC32CXMTG_EK
   #include "pic32cxmtg_ek.h"
+#elif TARGET_NAME==PIC32CXMTSH_DB
+  #include "pic32cxmtsh_db.h"
+#elif TARGET_NAME==PIC32CXMTSH_1_DB
+  #include "pic32cxmtsh_db.h"
 #endif
 
 #endif /* _BOARD_ */

@@ -7877,6 +7877,28 @@
 		"detect_code": ["0921"],
 		"components_add": ["SST26VF"]
     },
+    "PIC32CXMTSH_DB": {
+        "inherits": [
+			"PIC32CX"
+		],
+        "macros_add": [
+            "__PIC32CX2051MTSH128_0_"
+        ],
+		"device_name": "PIC32CX2051MTSH128_0",
+		"detect_code": ["0921"],
+		"components_add": ["SST26VF"]
+    },
+    "PIC32CXMTSH_1_DB": {
+        "inherits": [
+			"PIC32CX"
+		],
+        "macros_add": [
+            "__PIC32CX2051MTSH128_1_"
+        ],
+		"device_name": "PIC32CX2051MTSH128_1",
+		"detect_code": ["0921"],
+		"components_add": ["SST26VF"]
+    },
     "__build_tools_metadata__": {
         "version": "1",
         "public": false
