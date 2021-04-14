@@ -58,8 +58,8 @@
 /* #define CONFIG_SYSCLK_PRES          SYSCLK_PRES_64 */
 /* #define CONFIG_SYSCLK_PRES          SYSCLK_PRES_3 */
 
-/* ===== PLLACK1 (A) Options   (Fpll = (Fclk * (MUL + 1 + (FRACR / 2^22))) / (DIV1 + 1) = 400MHz) */
-/* ===== PLLACK0 (A) Options   (Fpll = (Fclk * (MUL + 1 + (FRACR / 2^22))) / (DIV0 + 1) = 400MHz) */
+/* ===== PLLACK1 (A) Options   (Fpll = (Fclk * (MUL + 1 + (FRACR / 2^22))) / (DIV1 + 1) = 200MHz) */
+/* ===== PLLACK0 (A) Options   (Fpll = (Fclk * (MUL + 1 + (FRACR / 2^22))) / (DIV0 + 1) = 20MHz) */
 #define CONFIG_PLL0_SOURCE          PLLA_SRC_SLCK_32K_XTAL
 #define CONFIG_PLL0_MUL             12206
 #define CONFIG_PLL0_FRACR           131072
