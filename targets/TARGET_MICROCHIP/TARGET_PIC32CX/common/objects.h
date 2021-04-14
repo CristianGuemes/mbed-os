@@ -80,6 +80,7 @@ struct pwmout_s {
 #if DEVICE_INTERRUPTIN
 struct gpio_irq_s {
     PinName pin;
+    uint32_t id_pio;
     uint8_t risingEdge;
     uint8_t fallingEdge;
 };

@@ -79,7 +79,7 @@ static struct s_interrupt_source *gpio_irq_get_source(gpio_irq_t *obj)
 {
     uint8_t i;
     struct s_interrupt_source *pSource;
-    
+
     // Check interrupt for this pin, if already defined, redefine it.
 	for (i = 0; i <= gs_ul_nb_sources; i++) {
 		pSource = &(gs_interrupt_sources[i]);
@@ -105,7 +105,7 @@ static void gpio_irq_handler_process(PioGroup *p_pio_group, uint32_t ul_id)
 		i = 0;
 		while (status != 0) {
 			/* Source is configured on the same controller */
-			if (gs_interrupt_sources[i].id == ul_id) {
+			if (gs_interrupt_sources[i].obj->id_pio == ul_id) {
 				/* Source has PIOs whose statuses have changed */
 				if ((status & gs_interrupt_sources[i].mask) != 0) {
 					gs_interrupt_sources[i].handler(gs_interrupt_sources[i].id,
@@ -130,17 +130,18 @@ int gpio_irq_init(gpio_irq_t *obj, PinName pin, gpio_irq_handler handler, uint32
     uint32_t pioId;
 	struct s_interrupt_source *pSource;
     uint8_t i;
-    
-    // Init pin
-    obj->pin = pin;
-    obj->risingEdge = 0;
-    obj->fallingEdge = 0;
-    
+
     // Get PIO definitions
     port = ioport_pin_to_port_id(pin);
     pio = ioport_port_to_base(port);
     mask = ioport_pin_to_mask(pin);
-    pioId = ioport_pin_to_port_id(pin);
+    pioId = ioport_port_to_id(port);
+
+    // Init pin
+    obj->pin = pin;
+    obj->risingEdge = 0;
+    obj->fallingEdge = 0;
+    obj->id_pio = pioId;
 
     // Check MAX interrupt sources
 	if (gs_ul_nb_sources >= MAX_INTERRUPT_SOURCES) {
@@ -163,13 +164,13 @@ int gpio_irq_init(gpio_irq_t *obj, PinName pin, gpio_irq_handler handler, uint32
 	if (i == gs_ul_nb_sources + 1) {
 		gs_ul_nb_sources++;
 	}
-    
+
     // Adjust pio debounce filter parameters, uses 10 Hz filter.
 	pio_set_debounce_filter(pio, mask, 10);
-    
+
      // Disable PIO line interrupts.
 	pio_disable_interrupt(pio, mask);
-    
+
     // Disable NVIC
     NVIC_DisableIRQ((IRQn_Type)pioId);
 
@@ -188,19 +189,19 @@ void gpio_irq_set(gpio_irq_t *obj, gpio_irq_event event, uint32_t enable)
     PioGroup *pio;
     ioport_port_t port;
     ioport_port_mask_t mask;
-    uint32_t pioId;
-	struct s_interrupt_source *pSource;
-    
+    uint32_t id;
+    struct s_interrupt_source *pSource;
+
     // Check previous init of interrupt source
     pSource = gpio_irq_get_source(obj);
     if (pSource) {
         pSource->event = event;
-        
+
         port = ioport_pin_to_port_id(obj->pin);
         pio = ioport_port_to_base(port);
         mask = ioport_pin_to_mask(obj->pin);
-        pioId = ioport_pin_to_port_id(obj->pin);
-        
+        id = ioport_port_to_id(port);
+
         switch (event) {
             case (IRQ_RISE):
                 obj->risingEdge = enable;
@@ -213,19 +214,20 @@ void gpio_irq_set(gpio_irq_t *obj, gpio_irq_event event, uint32_t enable)
             case (IRQ_NONE):
                 break;
         }
-        
+
         // Configure NVIC
-        NVIC_ClearPendingIRQ((IRQn_Type)pioId);
+        NVIC_ClearPendingIRQ((IRQn_Type)id);
         if (enable) {
                 // Enable NVIC
-                NVIC_EnableIRQ((IRQn_Type)pioId);
+                NVIC_EnableIRQ((IRQn_Type)id);
+                // Enable PIO line interrupts.
+                pio_enable_interrupt(pio, mask);
         } else {
                 // Disable NVIC
-                NVIC_DisableIRQ((IRQn_Type)pioId);
+                NVIC_DisableIRQ((IRQn_Type)id);
+                // Disable PIO line interrupts.
+                pio_disable_interrupt(pio, mask);
         }
-
-        /* Disable PIO line interrupts. */
-        pio_disable_interrupt(pio, mask);
     }
 }
 
@@ -233,14 +235,14 @@ void gpio_irq_enable(gpio_irq_t *obj)
 {
     PioGroup *pio;
     ioport_port_mask_t mask;
-	struct s_interrupt_source *pSource;
-    
+    struct s_interrupt_source *pSource;
+
     // Check previous init of interrupt source
     pSource = gpio_irq_get_source(obj);
     if (pSource) {
         pio = ioport_pin_to_base(obj->pin);
         mask = ioport_pin_to_mask(obj->pin);
-        
+
         /* Enable PIO line interrupts. */
         pio_enable_interrupt(pio, mask);
     }
@@ -251,7 +253,7 @@ void gpio_irq_disable(gpio_irq_t *obj)
     PioGroup *pio;
     ioport_port_mask_t mask;
 	struct s_interrupt_source *pSource;
-    
+
     // Check previous init of interrupt source
     pSource = gpio_irq_get_source(obj);
     if (pSource) {
