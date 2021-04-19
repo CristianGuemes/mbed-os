@@ -7882,7 +7882,7 @@
 			"PIC32CX"
 		],
         "macros_add": [
-            "__PIC32CX2051MTSH128_0_"
+            "__PIC32CX2051MTSH128_0__"
         ],
 		"device_name": "PIC32CX2051MTSH128_0",
 		"detect_code": ["0921"],
@@ -7893,7 +7893,7 @@
 			"PIC32CX"
 		],
         "macros_add": [
-            "__PIC32CX2051MTSH128_1_"
+            "__PIC32CX2051MTSH128_1__"
         ],
 		"device_name": "PIC32CX2051MTSH128_1",
 		"detect_code": ["0921"],

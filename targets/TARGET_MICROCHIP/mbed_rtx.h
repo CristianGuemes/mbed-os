@@ -21,9 +21,9 @@
 
 #ifndef INITIAL_SP
 
-#if defined(__PIC32CX2051MTG100__) || defined(__PIC32CX2051MTSH128_0_)
+#if defined(__PIC32CX2051MTG100__) || defined(__PIC32CX2051MTSH128_0__)
 #define INITIAL_SP              (0x2007FFFFUL)
-#elif defined(__PIC32CX2051MTSH128_1_)
+#elif defined(__PIC32CX2051MTSH128_1__)
 #define INITIAL_SP              (0x2008FFFFUL)
 #endif
 

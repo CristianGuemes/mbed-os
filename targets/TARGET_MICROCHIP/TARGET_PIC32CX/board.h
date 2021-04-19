@@ -32,6 +32,10 @@
 
 #include "compiler.h"
 
+#define PIC32CXMTG_EK                     1  /* !< PIC32CXMTG Evaluation Kit */
+#define PIC32CXMTSH_DB                    2  /* !< PIC32CXMTSH Development Board */
+#define PIC32CXMTC_DB                     3  /* !< PIC32CXMTC Development Board */
+
 #if TARGET_NAME==PIC32CXMTG_EK
   #include "pic32cxmtg_ek.h"
 #elif TARGET_NAME==PIC32CXMTSH_DB
