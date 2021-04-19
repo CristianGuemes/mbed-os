@@ -151,29 +151,31 @@ typedef enum {
     QSPI_FLASH1_SCK = C15,
     QSPI_FLASH1_CSN = C14,
 
-    /* Xplain Pro Serial */
-    XPLAINPRO_SERIAL_TX = A0,
-    XPLAINPRO_SERIAL_RX = A1,
+    /* Xplain ADC */
+    XPLAINPRO_ADC_P = A14,
+    XPLAINPRO_ADC_M = A15,
 
-    /* Mikro Bus 1 Serial */
-    MIKROBUS1_SERIAL_TX = D2,
-    MIKROBUS1_SERIAL_RX = D1,
+    /* Xplain GPIO */
+    XPLAINPRO_GPIO1 = A28,
+    XPLAINPRO_GPIO2 = A31,
 
-    /* Mikro Bus 2 Serial */
-    MIKROBUS2_SERIAL_TX = B4,
-    MIKROBUS2_SERIAL_RX = B3,
+    /* Xplain PWM */
+    XPLAINPRO_PWM_P = B1,
+    XPLAINPRO_PWM_M = A25,
+
+    /* Xplain IRQ/GPIO */
+    XPLAINPRO_IRQ_GPIO = A26,
+
+    /* Xplain SS/GPIO */
+    XPLAINPRO_SS_GPIO = A27,
+
+    /* Xplain Additional GPIOS (No Serial) */
+    XPLAINPRO_GPIO3 = D15,
+    XPLAINPRO_GPIO4 = A6,
 
     /* Xplain Pro TWI */
     XPLAINPRO_TWI_SDA = A0,
     XPLAINPRO_TWI_SCL = A1,
-
-    /* Mikro Bus 1 TWI */
-    MIKROBUS1_TWI_SDA = A8,
-    MIKROBUS1_TWI_SCL = A9,
-
-    /* Mikro Bus 2 TWI */
-    MIKROBUS2_TWI_SDA = A12,
-    MIKROBUS2_TWI_SCL = A13,
 
     /* Xplain Pro SPI */
     XPLAINPRO_SPI_MOSI = A24,
@@ -181,23 +183,57 @@ typedef enum {
 	XPLAINPRO_SPI_SCLK = A22,
 	XPLAINPRO_SPI_CSEL = A21,
 
+    /* Mikro Bus 1 AN */
+    MIKROBUS1_AN = A29,
+
+	/* Mikro Bus 1 PWM */
+	MIKROBUS1_PWM = D17,
+
+	/* Mikro Bus 1 RST */
+	MIKROBUS1_RST = A30,
+
+	/* Mikro Bus 1 INT */
+	MIKROBUS1_INT = C7,
+
+    /* Mikro Bus 1 Serial */
+    MIKROBUS1_SERIAL_TX = D2,
+    MIKROBUS1_SERIAL_RX = D1,
+
+    /* Mikro Bus 1 TWI */
+    MIKROBUS1_TWI_SDA = A8,
+    MIKROBUS1_TWI_SCL = A9,
+
     /* Mikro Bus 1 SPI */
     MIKROBUS1_SPI_MOSI = B9,
 	MIKROBUS1_SPI_MISO = B10,
 	MIKROBUS1_SPI_SCLK = B11,
 	MIKROBUS1_SPI_CSEL = B12,
 
+    /* Mikro Bus 2 AN */
+    MIKROBUS2_AN = B0,
+
+	/* Mikro Bus 2 PWM */
+	MIKROBUS2_PWM = D18,
+
+	/* Mikro Bus 2 RST */
+	MIKROBUS2_RST = B5,
+
+	/* Mikro Bus 2 INT */
+	MIKROBUS2_INT = B6,
+
+    /* Mikro Bus 2 Serial */
+    MIKROBUS2_SERIAL_TX = B4,
+    MIKROBUS2_SERIAL_RX = B3,
+
+    /* Mikro Bus 2 TWI */
+    MIKROBUS2_TWI_SDA = A12,
+    MIKROBUS2_TWI_SCL = A13,
+
     /* Mikro Bus 2 SPI */
     MIKROBUS2_SPI_MOSI = B24,
 	MIKROBUS2_SPI_MISO = B25,
 	MIKROBUS2_SPI_SCLK = B26,
 	MIKROBUS2_SPI_CSEL = C0,
-
-	/* Mikro Bus 1 PWM */
-	MIKROBUS1_PWM = D17,
-
-	/* Mikro Bus 2 PWM */
-	MIKROBUS2_PWM = D18,
 
     /* Not connected */
     NC = (int)0xFFFFFFFF

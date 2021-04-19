@@ -410,6 +410,12 @@
     },
     "PIC32CX2051MTG100": {
         "OGChipSelectEditMenu": "PIC32CX2051MTG100\tMicrochip PIC32CX2051MTG100"
+    },
+    "PIC32CX2051MTSH128_0": {
+        "OGChipSelectEditMenu": "PIC32CX2051MTSH128_0\tMicrochip PIC32CX2051MTSH128 Core 0"
+    },
+    "PIC32CX2051MTSH128_1": {
+        "OGChipSelectEditMenu": "PIC32CX2051MTSH128_1\tMicrochip PIC32CX2051MTSH128 Core 1"
     }
 
 }

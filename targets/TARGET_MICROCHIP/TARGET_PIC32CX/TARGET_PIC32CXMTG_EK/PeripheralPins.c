@@ -125,12 +125,16 @@ MBED_WEAK const PinMap PinMap_I2C_SCL[] = {
 
 /************PWM***************/
 MBED_WEAK const PinMap PinMap_PWM[] = {
-    /* PWM0 */
+    /* PWML0 */
     {D17, PWM_CH0, IOPORT_MODE_MUX_A},
-    /* PWM1 */
+    /* PWML1 */
     {D18, PWM_CH1, IOPORT_MODE_MUX_A},
-    /* PWM2 */
+    /* PWMH1 */
+    {D15, PWM_CH1, IOPORT_MODE_MUX_B},
+    /* PWML2 */
     {D19, PWM_CH2, IOPORT_MODE_MUX_A},
+    /* PWMH2 */
+    {D16, PWM_CH2, IOPORT_MODE_MUX_B},
     {NC, NC, 0}
 };
 

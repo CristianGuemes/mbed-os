@@ -32,11 +32,6 @@
 extern const PinMap PinMap_ADC[];
 #endif
 
-#if DEVICE_ANALOGOUT
-/************DAC***************/
-extern const PinMap PinMap_DAC[];
-#endif
-
 #if DEVICE_I2C
 /************I2C***************/
 extern const PinMap PinMap_I2C_SCL[];
