@@ -72,6 +72,7 @@ typedef enum {
 #define SPI_COUNT 7
 typedef enum {
     SPI_0 = (uint8_t)((uint32_t)SPI0 >> 12),
+    SPI_1 = (uint8_t)((uint32_t)SPI1 >> 12),
     SPI_2 = (uint8_t)((uint32_t)SPI2 >> 12),
     SPI_3 = (uint8_t)((uint32_t)SPI3 >> 12),
     SPI_4 = (uint8_t)((uint32_t)SPI4 >> 12),

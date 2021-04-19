@@ -137,6 +137,10 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName clk, PinName cs)
 		sysclk_enable_peripheral_clock(ID_FLEXCOM0);
         flexcom_enable(FLEXCOM0);
         flexcom_set_opmode(FLEXCOM0, FLEXCOM_SPI);
+	} else if (obj->spi == SPI1) {
+		sysclk_enable_peripheral_clock(ID_FLEXCOM1);
+        flexcom_enable(FLEXCOM1);
+        flexcom_set_opmode(FLEXCOM1, FLEXCOM_SPI);
 	} else if (obj->spi == SPI2) {
 		sysclk_enable_peripheral_clock(ID_FLEXCOM2);
         flexcom_enable(FLEXCOM2);
@@ -178,6 +182,8 @@ void spi_free(spi_t *obj)
     /* Disable the peripheral clock. */
     if (obj->spi == SPI0) {
 		sysclk_disable_peripheral_clock(ID_FLEXCOM0);
+	} else if (obj->spi == SPI1) {
+		sysclk_disable_peripheral_clock(ID_FLEXCOM1);
 	} else if (obj->spi == SPI2) {
 		sysclk_disable_peripheral_clock(ID_FLEXCOM2);
 	} else if (obj->spi == SPI3) {
