@@ -47,12 +47,14 @@ const ticker_info_t* lp_ticker_get_info()
 }
 
 static bool lp_ticker_inited = false;
+static volatile bool fire_int_flag = false;
 
 /** @brief	Interrupt handler for LPTIMER
 */
 void LPTIMER_TC_Handler(void)
 {
-    if (LPTIMER_TC->TC_CHANNEL[LPTIMER_TC_CHN].TC_SR & TC_SR_CPCS) {
+    if ((LPTIMER_TC->TC_CHANNEL[LPTIMER_TC_CHN].TC_SR & TC_SR_CPCS) || (fire_int_flag)) {
+        fire_int_flag = false;
         /* Trigger events */
         lp_ticker_irq_handler();
     }
@@ -145,6 +147,7 @@ void lp_ticker_clear_interrupt(void)
 
 void lp_ticker_fire_interrupt(void)
 {
+	fire_int_flag = true;
     NVIC_EnableIRQ(LPTIMER_TC_IRQn);
     NVIC_SetPendingIRQ(LPTIMER_TC_IRQn);
 }
