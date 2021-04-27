@@ -28,58 +28,58 @@
 #include "mbedtls/platform.h"
 
 /* ARIA configuration */
-struct aes_config g_aes_cfg;
+struct aes_config g_aria_cfg;
 
 /* AES auto padding configuration */
-struct aes_ap_config g_aes_ap_cfg;
+struct aes_ap_config g_aria_ap_cfg;
 
 /* Output data */
 static uint32_t *spul_output_data;
 
 /* State indicate */
-volatile bool b_aes_state;
+volatile bool b_aria_state;
 
 #if defined(MBEDTLS_THREADING_C)
 #include "mbedtls/threading.h"
-/* Mutex for protecting access to the AES instance */
-static mbedtls_threading_mutex_t aes_mutex;
-static volatile bool aes_mutex_inited = false;
+/* Mutex for protecting access to the ARIA instance */
+static mbedtls_threading_mutex_t aria_mutex;
+static volatile bool aria_mutex_inited = false;
 #endif
 
 /**
  * \brief The AES interrupt call back function.
  */
-static void aes_int_callback(void)
+static void aria_int_callback(void)
 {
 	/* Read the output. */
 	aes_read_output_data(AES, spul_output_data);
-	b_aes_state = true;
+	b_aria_state = true;
 }
 
-static void _aes_lock(void)
+static void _aria_lock(void)
 {
 #if defined(MBEDTLS_THREADING_C)
-    if (!aes_mutex_inited) {
+    if (!aria_mutex_inited) {
         /* Turn off interrupts that can cause preemption */
 		Disable_global_interrupt();
 
-        if (!aes_mutex_inited) {
-            mbedtls_mutex_init(&aes_mutex);
-            aes_mutex_inited = true;
+        if (!aria_mutex_inited) {
+            mbedtls_mutex_init(&aria_mutex);
+            aria_mutex_inited = true;
         }
 			
 		Enable_global_interrupt();
     }
 	
-    mbedtls_mutex_lock(&aes_mutex);
+    mbedtls_mutex_lock(&aria_mutex);
 #endif
 }
 
-static void _aes_unlock(void)
+static void _aria_unlock(void)
 {
 #if defined(MBEDTLS_THREADING_C)
-    if (aes_mutex_inited) {
-        mbedtls_mutex_unlock(&aes_mutex);
+    if (aria_mutex_inited) {
+        mbedtls_mutex_unlock(&aria_mutex);
     }
 #endif
 }
@@ -91,19 +91,19 @@ static void _aria_crypt(mbedtls_aria_context *ctx, uint8_t *puc_init_vector, uin
 {
 	/* Protect context access                                  */
     /* (it may occur at a same time in a threaded environment) */
-	_aes_lock();
+	_aria_lock();
 
-	b_aes_state = false;
+	b_aria_state = false;
 
 	/* Configure the AES. */
-	g_aes_cfg.encrypt_mode = ctx->encDec;
-	g_aes_cfg.key_size = ctx->keySize;
-	g_aes_cfg.start_mode = AES_AUTO_START;
-	g_aes_cfg.opmode = ctx->opMode;
-	g_aes_cfg.cfb_size = AES_CFB_SIZE_128;
-	g_aes_cfg.lod = false;
-	g_aes_cfg.algo = AES_ALGO_ARIA;
-	aes_set_config(AES, &g_aes_cfg, &g_aes_ap_cfg);
+	g_aria_cfg.encrypt_mode = ctx->encDec;
+	g_aria_cfg.key_size = ctx->keySize;
+	g_aria_cfg.start_mode = AES_AUTO_START;
+	g_aria_cfg.opmode = ctx->opMode;
+	g_aria_cfg.cfb_size = AES_CFB_SIZE_128;
+	g_aria_cfg.lod = false;
+	g_aria_cfg.algo = AES_ALGO_ARIA;
+	aes_set_config(AES, &g_aria_cfg, &g_aria_ap_cfg);
 
 	/* Set the cryptographic key. */
 	aes_write_key(AES, (const *)ctx->keys);
@@ -120,12 +120,12 @@ static void _aria_crypt(mbedtls_aria_context *ctx, uint8_t *puc_init_vector, uin
 	aes_write_input_data(AES, (uint32_t const *)puc_in_text);
 
 	/* Wait for the end of the encryption process. */
-	while (false == b_aes_state) {
+	while (false == b_aria_state) {
 		;
 	}
 
 	/* Free context access */
-	_aes_unlock();
+	_aria_unlock();
  
 	/* Return result - the output data is already in the buffer */
 }
@@ -167,12 +167,12 @@ void mbedtls_aria_init(mbedtls_aria_context *ctx)
     memset(ctx, 0, sizeof(mbedtls_aria_context));
 
 	/* Enable the AES module. */
-	aes_get_config_defaults(&g_aes_cfg, &g_aes_ap_cfg);
-	aes_init(AES, &g_aes_cfg, &g_aes_ap_cfg);
+	aes_get_config_defaults(&g_aria_cfg, &g_aria_ap_cfg);
+	aes_init(AES, &g_aria_cfg, &g_aria_ap_cfg);
 	aes_enable();
 
 	/* Enable AES interrupt. */
-	aes_set_callback(AES, AES_INTERRUPT_DATA_READY, aes_int_callback, 1);
+	aes_set_callback(AES, AES_INTERRUPT_DATA_READY, aria_int_callback, 1);
 }
 
 /*

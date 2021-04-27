@@ -1,5 +1,7 @@
-/*
- *  mbed OS configuration header for mbed TLS HW acceleration
+/**
+ * \file sha1_alt.h
+ *
+ * \brief SHA-1 cryptographic hash function
  *
  *  <b>Copyright (c) 2021 Microchip Technology Inc. and its subsidiaries.</b>
  *  SPDX-License-Identifier: Apache-2.0
@@ -16,14 +18,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-#ifndef MBEDTLS_DEVICE_H
-#define MBEDTLS_DEVICE_H
 
-#define MBEDTLS_AES_ALT
-#define MBEDTLS_ARIA_ALT
+#ifndef MBEDTLS_SHA1_ALT_H
+#define MBEDTLS_SHA1_ALT_H
 
-#define MBEDTLS_SHA1_ALT
-#define MBEDTLS_SHA256_ALT
-#define MBEDTLS_SHA512_ALT
+#if defined(MBEDTLS_SHA1_ALT)
 
-#endif /* MBEDTLS_DEVICE_H */
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \brief          SHA-1 context structure
+ */
+typedef struct
+{
+    uint32_t state[5];          /*!< intermediate digest state  */
+    uint32_t total[2];          /*!< number of bytes processed  */
+    unsigned char buffer[64];   /*!< data block being processed */
+}
+mbedtls_sha1_context;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* #if defined(MBEDTLS_SHA1_ALT) */
+
+#endif /* #ifndef MBEDTLS_SHA1_ALT_H */
