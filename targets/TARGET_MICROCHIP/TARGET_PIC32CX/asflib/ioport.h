@@ -126,6 +126,21 @@ __always_inline ioport_port_t ioport_pin_to_port_id(ioport_pin_t pin)
 	return pin >> 5;
 }
 
+__always_inline uint32_t ioport_port_to_id(ioport_port_t port)
+{
+	if (port == IOPORT_PIOA) {
+		return ID_PIOA;
+	} else if (port == IOPORT_PIOB) {
+		return ID_PIOB;
+	} else if (port == IOPORT_PIOC) {
+		return ID_PIOC;
+	} else if (port == IOPORT_PIOD) {
+		return ID_PIOD;
+	}
+
+	return 0;
+}
+
 __always_inline ioport_port_mask_t ioport_pin_to_mask(ioport_pin_t pin)
 {
 	return 1U << (pin & 0x1F);

@@ -1,0 +1,244 @@
+/***************************************************************************//**
+ * @file PinNames.h
+ *******************************************************************************
+ * @section License
+ * <b>Copyright (c) 2021 Microchip Technology Inc. and its subsidiaries.</b>
+ *******************************************************************************
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may
+ * not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************************/
+#ifndef MBED_PINNAMES_H
+#define MBED_PINNAMES_H
+
+#include "pic32cx.h"
+#include "CommonPinNames.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define PORT_SHIFT  5
+
+typedef enum {
+
+    // Arduino Headers
+    A0  = PIO_PA0_IDX,
+    A1  = PIO_PA1_IDX,
+    A2  = PIO_PA2_IDX,
+    A3  = PIO_PA3_IDX,
+    A4  = PIO_PA4_IDX,
+    A5  = PIO_PA5_IDX,
+    A6  = PIO_PA6_IDX,
+    A7  = PIO_PA7_IDX,
+    A8  = PIO_PA8_IDX,
+    A9  = PIO_PA9_IDX,
+    A10 = PIO_PA10_IDX,
+    A11 = PIO_PA11_IDX,
+    A12 = PIO_PA12_IDX,
+    A13 = PIO_PA13_IDX,
+    A14 = PIO_PA14_IDX,
+    A15 = PIO_PA15_IDX,
+    A16 = PIO_PA16_IDX,
+    A17 = PIO_PA17_IDX,
+    A18 = PIO_PA18_IDX,
+    A19 = PIO_PA19_IDX,
+    A20 = PIO_PA20_IDX,
+    A21 = PIO_PA21_IDX,
+    A22 = PIO_PA22_IDX,
+	A23 = PIO_PA23_IDX,
+	A24 = PIO_PA24_IDX,
+	A25 = PIO_PA25_IDX,
+	A26 = PIO_PA26_IDX,
+	A27 = PIO_PA27_IDX,
+	A28 = PIO_PA28_IDX,
+	A29 = PIO_PA29_IDX,
+	A30 = PIO_PA30_IDX,
+	A31 = PIO_PA31_IDX,
+	B0  = PIO_PB0_IDX,
+	B1  = PIO_PB1_IDX,
+	B2  = PIO_PB2_IDX,
+	B3  = PIO_PB3_IDX,
+	B4  = PIO_PB4_IDX,
+	B5  = PIO_PB5_IDX,
+	B6  = PIO_PB6_IDX,
+	B7  = PIO_PB7_IDX,
+	B8  = PIO_PB8_IDX,
+	B9  = PIO_PB9_IDX,
+	B10 = PIO_PB10_IDX,
+	B11 = PIO_PB11_IDX,
+	B12 = PIO_PB12_IDX,
+	B13 = PIO_PB13_IDX,
+	B14 = PIO_PB14_IDX,
+	B15 = PIO_PB15_IDX,
+	B16 = PIO_PB16_IDX,
+	B17 = PIO_PB17_IDX,
+	B18 = PIO_PB18_IDX,
+	B19 = PIO_PB19_IDX,
+	B20 = PIO_PB20_IDX,
+	B21 = PIO_PB21_IDX,
+	B22 = PIO_PB22_IDX,
+	B23 = PIO_PB23_IDX,
+	B24 = PIO_PB24_IDX,
+	B25 = PIO_PB25_IDX,
+	B26 = PIO_PB26_IDX,
+	C0  = PIO_PC0_IDX,
+	C1  = PIO_PC1_IDX,
+	C2  = PIO_PC2_IDX,
+	C3  = PIO_PC3_IDX,
+	C4  = PIO_PC4_IDX,
+	C5  = PIO_PC5_IDX,
+	C6  = PIO_PC6_IDX,
+	C7  = PIO_PC7_IDX,
+	C8  = PIO_PC8_IDX,
+	C9  = PIO_PC9_IDX,
+	C10 = PIO_PC10_IDX,
+	C11 = PIO_PC11_IDX,
+	C12 = PIO_PC12_IDX,
+	C13 = PIO_PC13_IDX,
+	C14 = PIO_PC14_IDX,
+	C15 = PIO_PC15_IDX,
+	C16 = PIO_PC16_IDX,
+	C17 = PIO_PC17_IDX,
+	C18 = PIO_PC18_IDX,
+	C19 = PIO_PC19_IDX,
+	C20 = PIO_PC20_IDX,
+	C21 = PIO_PC21_IDX,
+	C22 = PIO_PC22_IDX,
+	D0  = PIO_PD0_IDX,
+	D1  = PIO_PD1_IDX,
+	D2  = PIO_PD2_IDX,
+	D3  = PIO_PD3_IDX,
+	D4  = PIO_PD4_IDX,
+	D5  = PIO_PD5_IDX,
+	D6  = PIO_PD6_IDX,
+	D7  = PIO_PD7_IDX,
+	D8  = PIO_PD8_IDX,
+	D9  = PIO_PD9_IDX,
+	D10 = PIO_PD10_IDX,
+	D11 = PIO_PD11_IDX,
+	D12 = PIO_PD12_IDX,
+	D13 = PIO_PD13_IDX,
+	D14 = PIO_PD14_IDX,
+	D15 = PIO_PD15_IDX,
+	D16 = PIO_PD16_IDX,
+	D17 = PIO_PD17_IDX,
+	D18 = PIO_PD18_IDX,
+	D19 = PIO_PD19_IDX,
+
+	/* Board leds */
+    LED_GREEN = D17,
+    LED_BLUE  = D17,
+	LED_PWM0 = D17,
+	LED_PWM1 = D17,
+
+    /* mbed original LED naming */
+    LED1 = LED_GREEN,
+    LED2 = LED_BLUE,
+
+    /* Push buttons */
+	SW1 = A15,
+    SW2 = A14,
+    /* Standardized button names */
+    BUTTON1 = SW1,
+    BUTTON2 = SW2,
+
+    /* Serial Console usart */
+    SERIAL_TX = A4,
+    SERIAL_RX = A5,
+
+    /* It's not USB, but it is used in mbed_pinmap_default.cpp */
+    USBTX = SERIAL_TX,
+    USBRX = SERIAL_RX,
+
+    /* Board STDIO */
+    STDIO_UART_TX = SERIAL_TX,
+    STDIO_UART_RX = SERIAL_RX,
+
+    /* QSPI */
+    QSPI_FLASH1_IO0 = C13,
+    QSPI_FLASH1_IO1 = C12,
+    QSPI_FLASH1_IO2 = C11,
+    QSPI_FLASH1_IO3 = C10,
+    QSPI_FLASH1_SCK = C15,
+    QSPI_FLASH1_CSN = C14,
+
+    /* Xplain ADC */
+    XPLAINPRO_ADC_P = A30,
+    XPLAINPRO_ADC_M = B1,
+
+    /* Xplain GPIO */
+    XPLAINPRO_GPIO1 = A18,
+    XPLAINPRO_GPIO2 = A20,
+
+    /* Xplain PWM */
+    XPLAINPRO_PWM_P = D3,
+    XPLAINPRO_PWM_M = D16,
+
+    /* Xplain IRQ/GPIO */
+    XPLAINPRO_IRQ_GPIO = A3,
+
+    /* Xplain SS/GPIO */
+    XPLAINPRO_SS_GPIO = A2,
+
+    /* Xplain Pro Serial */
+    XPLAINPRO_SERIAL_TX = A12,
+    XPLAINPRO_SERIAL_RX = A13,
+
+    /* Xplain Pro TWI */
+    XPLAINPRO_TWI_SDA = A16,
+    XPLAINPRO_TWI_SCL = A17,
+
+    /* Xplain Pro SPI */
+    XPLAINPRO_SPI_MOSI = A8,
+	XPLAINPRO_SPI_MISO = A9,
+	XPLAINPRO_SPI_SCLK = A10,
+	XPLAINPRO_SPI_CSEL = A11,
+
+    /* Mikro Bus 1 AN */
+    MIKROBUS1_AN = A31,
+
+	/* Mikro Bus 1 PWM */
+	MIKROBUS1_PWM = D16,
+
+	/* Mikro Bus 1 RST */
+	MIKROBUS1_RST = B26,
+
+	/* Mikro Bus 1 INT */
+	MIKROBUS1_INT = B25,
+
+    /* Mikro Bus 1 Serial */
+    MIKROBUS1_SERIAL_TX = C16,
+    MIKROBUS1_SERIAL_RX = C17,
+
+    /* Mikro Bus 1 TWI */
+    MIKROBUS1_TWI_SDA = C21,
+    MIKROBUS1_TWI_SCL = C20,
+
+    /* Mikro Bus 1 SPI */
+    MIKROBUS1_SPI_MOSI = C9,
+	MIKROBUS1_SPI_MISO = C8,
+	MIKROBUS1_SPI_SCLK = C7,
+	MIKROBUS1_SPI_CSEL = C6,
+
+    /* Not connected */
+    NC = (int)0xFFFFFFFF
+} PinName;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

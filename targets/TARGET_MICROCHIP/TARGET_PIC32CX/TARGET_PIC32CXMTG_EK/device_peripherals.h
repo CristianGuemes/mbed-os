@@ -23,42 +23,4 @@
 #ifndef MBED_DEVICE_PERIPHERALS_H
 #define MBED_DEVICE_PERIPHERALS_H
 
-/****** TBD  **************************************/ 
-
-///* us ticker */
-//#define US_TICKER_TIMER         TIMER0
-//#define US_TICKER_TIMER_CLOCK   cmuClock_TIMER0
-//#define US_TICKER_TIMER_IRQ     TIMER0_IRQn
-//
-///* PWM */
-//#define PWM_TIMER        TIMER1
-//#define PWM_TIMER_CLOCK  cmuClock_TIMER1
-//#define PWM_ROUTE        TIMER_ROUTE_LOCATION_LOC1
-//
-///* Crystal calibration */
-//#if !defined(CMU_HFXOINIT_WSTK_DEFAULT)
-//#define CMU_HFXOINIT_WSTK_DEFAULT                                               \
-//{                                                                               \
-//  false,        /* Low-noise mode for EFR32 */                                  \
-//  false,        /* Disable auto-start on EM0/1 entry */                         \
-//  false,        /* Disable auto-select on EM0/1 entry */                        \
-//  false,        /* Disable auto-start and select on RAC wakeup */               \
-//  _CMU_HFXOSTARTUPCTRL_CTUNE_DEFAULT,                                           \
-//  0x142,        /* Steady-state CTUNE for TBSENSE boards without load caps */   \
-//  _CMU_HFXOSTEADYSTATECTRL_REGISH_DEFAULT,                                      \
-//  _CMU_HFXOSTARTUPCTRL_IBTRIMXOCORE_DEFAULT,                                    \
-//  0x7,          /* Recommended steady-state XO core bias current */             \
-//  0x6,          /* Recommended peak detection threshold */                      \
-//  _CMU_HFXOTIMEOUTCTRL_SHUNTOPTTIMEOUT_DEFAULT,                                 \
-//  0xA,          /* Recommended peak detection timeout  */                       \
-//  _CMU_HFXOTIMEOUTCTRL_STEADYTIMEOUT_DEFAULT,                                   \
-//  _CMU_HFXOTIMEOUTCTRL_STARTUPTIMEOUT_DEFAULT,                                  \
-//  cmuOscMode_Crystal,                                                           \
-//}
-//#endif
-//
-///* DCDC settings */
-//#if !defined(EMU_DCDCINIT_STK_DEFAULT)
-//#define EMU_DCDCINIT_STK_DEFAULT EMU_DCDCINIT_DEFAULT
-//#endif
 #endif

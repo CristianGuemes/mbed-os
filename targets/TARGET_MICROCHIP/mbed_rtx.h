@@ -19,10 +19,12 @@
 
 #include <stdint.h>
 
-#if defined(__PIC32CX2051MTG100__)
-
 #ifndef INITIAL_SP
-#define INITIAL_SP              (0x20080000UL - 1)
+
+#if defined(__PIC32CX2051MTG100__) || defined(__PIC32CX2051MTSH128_0__)
+#define INITIAL_SP              (0x2007FFFFUL)
+#elif defined(__PIC32CX2051MTSH128_1__)
+#define INITIAL_SP              (0x2008FFFFUL)
 #endif
 
 #endif
