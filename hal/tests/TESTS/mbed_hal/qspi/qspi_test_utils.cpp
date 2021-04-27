@@ -154,6 +154,13 @@ void flash_init(Qspi &qspi)
     ret = qspi_command_transfer(&qspi.handle, qspi.cmd.get(), blanks, 1, NULL, 0);
     TEST_ASSERT_EQUAL(QSPI_STATUS_OK, ret);
 
+#if defined(TARGET_PIC32CX)
+    // SST26VF: The default state after a power-on reset is write-protected
+    qspi.cmd.build(QSPI_CMD_GLOBAL_BP_UNLOCK);
+    ret = qspi_command_transfer(&qspi.handle, qspi.cmd.get(), NULL, 0, NULL, 0);
+    TEST_ASSERT_EQUAL(QSPI_STATUS_OK, ret);
+#endif
+
     WAIT_FOR(WRSR_MAX_TIME, qspi);
 }
 

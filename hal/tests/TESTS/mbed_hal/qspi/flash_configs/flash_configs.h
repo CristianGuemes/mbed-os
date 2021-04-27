@@ -78,6 +78,9 @@
 #elif   defined(TARGET_CYW9P62S1_43012EVB_01)
 #include "S25FS512S_config.h"
 
+#elif   defined(TARGET_PIC32CX)
+#include "SST26VF_config.h"
+
 #endif
 
 #endif // MBED_FLASH_CONFIGS_H
