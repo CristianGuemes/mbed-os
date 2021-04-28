@@ -45,7 +45,7 @@
 /**
  * \defgroup asfdoc_sam_drivers_aes_group SAM4C/4E/V71/V70/S70/E70/PIC32CX Advanced Encryption Standard (AES) Driver
  *
- * This driver for Atmel&reg; | SMART ARM&reg;-based microcontrollers provides an interface for 
+ * This driver for Atmel&reg; | SMART ARM&reg;-based microcontrollers provides an interface for
  * the configuration and management of the device's Advanced Encryption
  * Standard functionality.
  *
@@ -58,7 +58,7 @@
  * - Cipher Feedback (CFB)
  * - Counter (CTR)
  *
- * It also supports Galois/Counter Mode (GCM) as specified in the NIST Special 
+ * It also supports Galois/Counter Mode (GCM) as specified in the NIST Special
  * Publication 800-38D Recommendation.
  *
  *
@@ -99,7 +99,7 @@
  * - Cipher Feedback (CFB)
  * - Counter (CTR)
  *
- * It also supports Galois/Counter Mode (GCM) as specified in the NIST Special 
+ * It also supports Galois/Counter Mode (GCM) as specified in the NIST Special
  * Publication 800-38D Recommendation.
  *
  * Data transfers both to and from the AES module can occur using the Peripheral
@@ -156,11 +156,11 @@ enum aes_encrypt_mode {
 };
 
 /** AES cryptographic key size. */
-enum aes_key_size {
+typedef enum aes_key_size {
 	AES_KEY_SIZE_128 = 0, 	/**< AES key size is 128 bits. */
 	AES_KEY_SIZE_192,		/**< AES key size is 192 bits. */
 	AES_KEY_SIZE_256,		/**< AES key size is 256 bits. */
-};
+} aes_key_size_t;
 
 /** AES start mode. */
 enum aes_start_mode {
@@ -170,14 +170,14 @@ enum aes_start_mode {
 };
 
 /** AES cipher block mode. */
-enum aes_opmode {
+typedef enum aes_opmode {
 	AES_ECB_MODE = 0,		/**< Electronic Codebook (ECB). */
 	AES_CBC_MODE,			/**< Cipher Block Chaining (CBC). */
 	AES_OFB_MODE,			/**< Output Feedback (OFB). */
 	AES_CFB_MODE,			/**< Cipher Feedback (CFB). */
 	AES_CTR_MODE,			/**< Counter (CTR). */
 	AES_GCM_MODE,			/**< Galois Counter Mode (GCM).*/
-};
+} aes_opmode_t;
 
 /** AES Cipher FeedBack (CFB) size. */
 enum aes_cfb_size {
@@ -577,8 +577,8 @@ static inline void aes_write_gcmh(Aes *const p_aes, uint32_t id, uint32_t hword)
 	p_aes->AES_GCMHR[id] = hword;
 }
 
-void aes_set_byte_count(Aes *p_aes, uint32_t ul_count); 
-uint32_t aes_get_byte_count(Aes *p_aes);  
+void aes_set_byte_count(Aes *p_aes, uint32_t ul_count);
+uint32_t aes_get_byte_count(Aes *p_aes);
 
 void aes_set_writeprotect(Aes *p_aes, bool enable, bool int_enable, bool control_enable, bool first_error_report_enable, uint8_t uc_action);
 
@@ -682,7 +682,7 @@ uint32_t aes_get_writeprotect_status(Aes *p_aes);
  *	</tr>
  * </table>
  */
- 
+
 /**
  * \page asfdoc_sam_drivers_aes_exqsg Examples for Advanced Encryption Standard
  *

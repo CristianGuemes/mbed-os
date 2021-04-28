@@ -37,7 +37,7 @@
  * Support and FAQ: visit <a href="https://www.microchip.com/support/">Microchip Support</a>
  */
 
-#include <aes.h>
+#include "aes_pic32cx.h"
 #include <sysclk.h>
 #include <sleepmgr.h>
 
@@ -65,16 +65,16 @@ aes_callback_t aes_callback_pointer[AES_INTERRUPT_SOURCE_NUM];
  *  - Electronic Codebook (ECB) mode
  *  - Last output data mode is disabled
  *  - No extra delay
- *  - No tamper detection 
+ *  - No tamper detection
  *  - AES algorithm
- *  - Block processing end disabled 
+ *  - Block processing end disabled
  *  - No auto padding
  *
  *  \param[out] p_cfg Pointer to an AES configuration structure
  *  \param[out] p_ap_cfg Pointer to an AES auto padding configuration structure
  */
 void aes_get_config_defaults(
-		struct aes_config *const p_cfg, 
+		struct aes_config *const p_cfg,
 		struct aes_ap_config *const p_ap_cfg)
 {
 	/* Sanity check arguments */
@@ -164,7 +164,7 @@ void aes_set_config(
 	/* Validate arguments. */
 	Assert(p_aes);
 	Assert(p_cfg);
-	
+
 	/* Set processing mode */
 	if (p_cfg->encrypt_mode) {
 		ul_mode |= AES_MR_CIPHER;
@@ -208,7 +208,7 @@ void aes_set_config(
 	p_aes->AES_EMR = 0;
 
 	if (p_cfg->bpe) {
-		p_aes->AES_EMR |= AES_EMR_BPE; 
+		p_aes->AES_EMR |= AES_EMR_BPE;
 	}
 
 	if (p_cfg->algo == AES_ALGO_ARIA) {
@@ -224,7 +224,7 @@ void aes_set_config(
 	}
 
 	p_aes->AES_EMR |= AES_EMR_PADLEN(p_ap_cfg->padlen);
-	
+
 	p_aes->AES_EMR |= AES_EMR_NHEAD(p_ap_cfg->nhead);
 }
 
@@ -319,7 +319,7 @@ void aes_set_writeprotect(Aes *p_aes, bool enable, bool int_enable, bool control
 	if (int_enable) {
 		ul_reg |= AES_WPMR_WPITEN;
 	}
-	  
+
 	if (control_enable) {
 		ul_reg |= AES_WPMR_WPCREN;
 	}
@@ -363,7 +363,7 @@ void aes_write_key(
 	/* Validate arguments. */
 	Assert(p_aes);
 	Assert(p_key);
-	
+
 	switch ((p_aes->AES_MR & AES_MR_KEYSIZE_Msk) >>
 			AES_MR_KEYSIZE_Pos) {
 	case 0: /* 128bit cryptographic key */
@@ -403,7 +403,7 @@ void aes_write_initvector(
 
 	/* Validate arguments. */
 	Assert(p_aes);
-	
+
 	for (i = 0; i < 4; i++) {
 		p_aes->AES_IVR[i] = *p_vector;
 		p_vector++;
@@ -425,7 +425,7 @@ void aes_write_input_data(
 	/* Validate arguments. */
 	Assert(p_aes);
 	Assert(p_input_data_buffer);
-	
+
 	for (i = 0; i < 4; i++) {
 		p_aes->AES_IDATAR[i] = *p_input_data_buffer;
 		p_input_data_buffer++;
@@ -450,7 +450,7 @@ void aes_read_output_data(
 	/* Validate arguments. */
 	Assert(p_aes);
 	Assert(p_output_data_buffer);
-	
+
 	for (i = 0; i < 4; i++) {
 		*p_output_data_buffer = p_aes->AES_ODATAR[i];
 		p_output_data_buffer++;
@@ -471,7 +471,7 @@ Pdc *aes_get_pdc_base(
 {
 	/* Validate arguments. */
 	Assert(p_aes);
-	
+
 	Pdc *p_pdc_base;
 	if (p_aes == AES) {
 		p_pdc_base = PDC_AES;
@@ -498,12 +498,12 @@ void aes_set_callback(
 {
 	/* Validate arguments. */
 	Assert(p_aes);
-	
+
 	if (source == AES_INTERRUPT_DATA_READY) {
 		aes_callback_pointer[0] = callback;
 	} else if (source == AES_INTERRUPT_UNSPECIFIED_REGISTER_ACCESS) {
 		aes_callback_pointer[1] = callback;
-	} 
+	}
 	else if ((source == AES_INTERRUPT_TAG_READY)) {
 		aes_callback_pointer[2] = callback;
 	} else if (source == AES_INTERRUPT_END_OF_RECEIVE_BUFFER) {
@@ -520,7 +520,7 @@ void aes_set_callback(
 		aes_callback_pointer[8] = callback;
 	} else if (source == AES_INTERRUPT_END_PADDING_EVENT) {
 		aes_callback_pointer[9] = callback;
-	}	
+	}
 
 	irq_register_handler((IRQn_Type)AES_IRQn, irq_level);
 	aes_enable_interrupt(p_aes, source);
