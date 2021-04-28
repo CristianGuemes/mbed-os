@@ -57,8 +57,7 @@ watchdog_status_t hal_watchdog_init(const watchdog_config_t *config)
     /* Configure DWDT to trigger a reset */
     dwdt_cfg.ul_slck = CHIP_FREQ_SLCK_RC;
     dwdt_cfg.ul_prescaler = WDT0_IL_PRESC_RATIO128;
-    dwdt_cfg.ul_mode =  WDT0_MR_WDIDLEHLT | /* WDT stops in idle state. */
-        WDT0_MR_WDDBG0HLT | /* WDT stops in core 0 debug state. */
+    dwdt_cfg.ul_mode =  WDT0_MR_WDDBG0HLT | /* WDT stops in core 0 debug state. */
         WDT0_MR_WDDBG1HLT | /* WDT stops in core 1 debug state. */
         WDT0_MR_PERIODRST; /* WDT enables period reset */
     dwdt_cfg.ul_time = config->timeout_ms; /* Period time in ms */
@@ -68,6 +67,14 @@ watchdog_status_t hal_watchdog_init(const watchdog_config_t *config)
     /* Initialize DWDT with the given parameters. */
     if (dwdt_init(DWDT, WDT0_ID, &dwdt_cfg)) {
         return WATCHDOG_STATUS_INVALID_ARGUMENT;
+    }
+
+    /* Get timeout value. */
+    wdt_timeout_reload_ms = dwdt_get_timeout_value(dwdt_cfg.ul_time * 1000,
+            dwdt_cfg.ul_slck, dwdt_cfg.ul_prescaler);
+
+    while(dwdt_get_value(DWDT, WDT0_ID) > wdt_timeout_reload_ms) {
+        dwdt_restart(DWDT, WDT0_ID);
     }
 
     wdt_timeout_reload_ms = config->timeout_ms;

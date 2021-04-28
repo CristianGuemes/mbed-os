@@ -964,8 +964,8 @@ void UART_Handler         ( void );
 /* ************************************************************************** */
 
 /* Device characteristics */
-#define CHIP_FREQ_SLCK_RC               (31700UL)
-#define CHIP_FREQ_MAINCK_RC_12MHZ       (12110000UL)
+#define CHIP_FREQ_SLCK_RC               (32000UL)
+#define CHIP_FREQ_MAINCK_RC_12MHZ       (12000000UL)
 #define CHIP_FREQ_CPU_MAX               (200000000UL)
 #define CHIP_FREQ_XTAL_32K              (32768UL)
 
