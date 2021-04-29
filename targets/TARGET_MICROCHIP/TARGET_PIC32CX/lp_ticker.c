@@ -28,7 +28,7 @@
 #include "lp_ticker_api.h"
 #include "cmsis.h"
 
-#define LPTIMER_FREQUENCY    32768
+#define LPTIMER_FREQUENCY    32000
 #define LPTIMER_BITS         32
 
 #define LPTIMER_ID_TC        ID_TC0_CHANNEL1
