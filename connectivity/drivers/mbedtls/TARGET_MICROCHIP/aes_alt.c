@@ -165,9 +165,6 @@ void mbedtls_aes_free(mbedtls_aes_context *ctx)
     AES_VALIDATE_RET(ctx != NULL);
 
     memset(ctx, 0, sizeof(mbedtls_aes_context));
-
-    /* Disable the AES module. */
-    aes_disable();
 }
 
 /*

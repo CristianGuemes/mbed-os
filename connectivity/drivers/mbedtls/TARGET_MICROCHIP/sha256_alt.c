@@ -127,6 +127,8 @@ int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
     SHA256_VALIDATE_RET(is224 == 0 || is224 == 1);
 
     ctx->is224 = is224;
+    ctx->total[0] = 0;
+    ctx->total[1] = 0;
 
     /* Configure the SHA */
     g_sha256_cfg.start_mode = SHA_MANUAL_START;

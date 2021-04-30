@@ -125,6 +125,9 @@ int mbedtls_sha1_starts_ret(mbedtls_sha1_context *ctx)
 {
     SHA1_VALIDATE(ctx != NULL);
 
+    ctx->total[0] = 0;
+    ctx->total[1] = 0;
+
     /* Configure the SHA */
     g_sha1_cfg.start_mode = SHA_MANUAL_START;
     g_sha1_cfg.aoe = false;

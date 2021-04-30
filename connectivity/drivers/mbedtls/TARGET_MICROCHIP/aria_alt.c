@@ -192,9 +192,6 @@ void mbedtls_aria_free(mbedtls_aria_context *ctx)
     ARIA_VALIDATE_RET(ctx != NULL);
 
     memset(ctx, 0, sizeof(mbedtls_aria_context));
-
-    /* Disable the AES module. */
-    aes_disable();
 }
 
 /*
