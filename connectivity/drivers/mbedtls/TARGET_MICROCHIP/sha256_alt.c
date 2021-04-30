@@ -45,11 +45,19 @@
 }
 #endif
 
+#define PUT_UINT32_BE_local(n,b,i)                   \
+{                                                    \
+    (b)[(i) + 3] = (unsigned char)((n) >> 24);       \
+    (b)[(i) + 2] = (unsigned char)((n) >> 16);       \
+    (b)[(i) + 1] = (unsigned char)((n) >> 8);        \
+    (b)[(i)    ] = (unsigned char)((n));             \
+}
+
 /* Output data array */
-static uint32_t output_data[SHA_HASH_SIZE_SHA512];
+static uint32_t sha256_output_data[SHA_HASH_SIZE_SHA512];
 
 /* SHA configuration */
-struct sha_config g_sha_cfg;
+struct sha_config g_sha256_cfg;
 
 /* State indicate */
 volatile bool b_sha256_state = false;
@@ -62,7 +70,7 @@ static void sha256_callback(uint8_t uc_data)
     (void)uc_data;
 
     /* Read the output */
-    sha_read_output_data(SHA, output_data);
+    sha_read_output_data(SHA, sha256_output_data);
     b_sha256_state = true;
 }
 
@@ -76,8 +84,8 @@ void mbedtls_sha256_init(mbedtls_sha256_context *ctx)
     memset(ctx, 0, sizeof(mbedtls_sha256_context));
 
     /* Enable the SHA module */
-    sha_get_config_defaults(&g_sha_cfg);
-    sha_init(SHA, &g_sha_cfg);
+    sha_get_config_defaults(&g_sha256_cfg);
+    sha_init(SHA, &g_sha256_cfg);
     sha_enable();
 
     /* Enable SHA interrupt */
@@ -92,9 +100,6 @@ void mbedtls_sha256_free(mbedtls_sha256_context *ctx)
     SHA256_VALIDATE(ctx != NULL);
 
     memset(ctx, 0, sizeof(mbedtls_sha256_context));
-
-    /* Disable the SHA module */
-    sha_disable();
 }
 
 /*
@@ -124,22 +129,22 @@ int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
     ctx->is224 = is224;
 
     /* Configure the SHA */
-    g_sha_cfg.start_mode = SHA_MANUAL_START;
-    g_sha_cfg.aoe = false;
-    g_sha_cfg.procdly = false;
-    g_sha_cfg.uihv = false;
-    g_sha_cfg.uiehv = false;
-    g_sha_cfg.bpe = false;
+    g_sha256_cfg.start_mode = SHA_MANUAL_START;
+    g_sha256_cfg.aoe = false;
+    g_sha256_cfg.procdly = false;
+    g_sha256_cfg.uihv = false;
+    g_sha256_cfg.uiehv = false;
+    g_sha256_cfg.bpe = false;
     if (is224 == 0) {
-        g_sha_cfg.algo = SHA_ALGO_SHA256;
+        g_sha256_cfg.algo = SHA_ALGO_SHA256;
     } else {
-        g_sha_cfg.algo = SHA_ALGO_SHA224;
+        g_sha256_cfg.algo = SHA_ALGO_SHA224;
     }
-    g_sha_cfg.tmpclk = false;
-    g_sha_cfg.dualbuff = false;
-    g_sha_cfg.check = SHA_NO_CHECK;
-    g_sha_cfg.chkcnt = 0;
-    sha_set_config(SHA, &g_sha_cfg);
+    g_sha256_cfg.tmpclk = false;
+    g_sha256_cfg.dualbuff = false;
+    g_sha256_cfg.check = SHA_NO_CHECK;
+    g_sha256_cfg.chkcnt = 0;
+    sha_set_config(SHA, &g_sha256_cfg);
 
     /* No automatic padding */
     sha_set_msg_size(SHA, 0);
@@ -239,7 +244,7 @@ int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx, unsigned char output[
     }
 
     /*
-    * Add message length
+    * Add message length (multiply by 8 to get number of bits)
     */
     high = (ctx->total[0] >> 29) | (ctx->total[1] << 3);
     low = (ctx->total[0] <<  3);
@@ -254,16 +259,16 @@ int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx, unsigned char output[
     /*
     * Output final state
     */
-    PUT_UINT32_BE(ctx->state[0], output, 0);
-    PUT_UINT32_BE(ctx->state[1], output, 4);
-    PUT_UINT32_BE(ctx->state[2], output, 8);
-    PUT_UINT32_BE(ctx->state[3], output, 12);
-    PUT_UINT32_BE(ctx->state[4], output, 16);
-    PUT_UINT32_BE(ctx->state[5], output, 20);
-    PUT_UINT32_BE(ctx->state[6], output, 24);
+    PUT_UINT32_BE_local(ctx->state[0], output, 0);
+    PUT_UINT32_BE_local(ctx->state[1], output, 4);
+    PUT_UINT32_BE_local(ctx->state[2], output, 8);
+    PUT_UINT32_BE_local(ctx->state[3], output, 12);
+    PUT_UINT32_BE_local(ctx->state[4], output, 16);
+    PUT_UINT32_BE_local(ctx->state[5], output, 20);
+    PUT_UINT32_BE_local(ctx->state[6], output, 24);
 
     if (ctx->is224 == 0) {
-        PUT_UINT32_BE(ctx->state[7], output, 28);
+        PUT_UINT32_BE_local(ctx->state[7], output, 28);
     }
 
     return 0;
@@ -274,6 +279,8 @@ int mbedtls_sha256_finish_ret(mbedtls_sha256_context *ctx, unsigned char output[
 */
 int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned char data[64])
 {
+    unsigned int i;
+
     SHA256_VALIDATE_RET(ctx != NULL);
     SHA256_VALIDATE_RET((const unsigned char *)data != NULL);
 
@@ -289,10 +296,12 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned 
     }
 
     /* Copy intermediate result */
+    for (i = 0; i < SHA_HASH_SIZE_SHA224; i++) {
+        ctx->state[i] = sha256_output_data[i];
+    }
+
     if (ctx->is224 == 0) {
-        memcpy(ctx->state, output_data, SHA_HASH_SIZE_SHA256);
-    } else {
-        memcpy(ctx->state, output_data, SHA_HASH_SIZE_SHA224);
+        ctx->state[SHA_HASH_SIZE_SHA256 - 1] = sha256_output_data[SHA_HASH_SIZE_SHA256 - 1];
     }
 
     return 0;

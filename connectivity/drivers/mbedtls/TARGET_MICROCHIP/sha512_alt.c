@@ -59,11 +59,32 @@ static void sha512_put_uint64_be(uint64_t n, unsigned char *b, uint8_t i)
 #define sha512_put_uint64_be    PUT_UINT64_BE
 #endif /* MBEDTLS_SHA512_SMALLER */
 
+#define PUT_UINT64_BE_local(n,b,i)                   \
+{                                                    \
+    (b)[(i) + 7] = (unsigned char)((n) >> 56);       \
+    (b)[(i) + 6] = (unsigned char)((n) >> 48);       \
+    (b)[(i) + 5] = (unsigned char)((n) >> 40);       \
+    (b)[(i) + 4] = (unsigned char)((n) >> 32);       \
+    (b)[(i) + 3] = (unsigned char)((n) >> 24);       \
+    (b)[(i) + 2] = (unsigned char)((n) >> 16);       \
+    (b)[(i) + 1] = (unsigned char)((n) >> 8);        \
+    (b)[(i)    ] = (unsigned char)((n));             \
+}
+
+#if defined(MBEDTLS_SHA512_SMALLER)
+static void sha512_put_uint64_be_local(uint64_t n, unsigned char *b, uint8_t i)
+{
+    PUT_UINT64_BE_local(n, b, i);
+}
+#else
+#define sha512_put_uint64_be_local    PUT_UINT64_BE_local
+#endif /* MBEDTLS_SHA512_SMALLER */
+
 /* Output data array */
-static uint32_t output_data[SHA_HASH_SIZE_SHA512];
+static uint32_t sha512_output_data[SHA_HASH_SIZE_SHA512];
 
 /* SHA configuration */
-struct sha_config g_sha_cfg;
+struct sha_config g_sha512_cfg;
 
 /* State indicate */
 volatile bool b_sha512_state = false;
@@ -76,7 +97,7 @@ static void sha512_callback(uint8_t uc_data)
     (void)uc_data;
 
     /* Read the output */
-    sha_read_output_data(SHA, output_data);
+    sha_read_output_data(SHA, sha512_output_data);
     b_sha512_state = true;
 }
 
@@ -90,8 +111,8 @@ void mbedtls_sha512_init(mbedtls_sha512_context *ctx)
     memset(ctx, 0, sizeof(mbedtls_sha512_context));
 
     /* Enable the SHA module */
-    sha_get_config_defaults(&g_sha_cfg);
-    sha_init(SHA, &g_sha_cfg);
+    sha_get_config_defaults(&g_sha512_cfg);
+    sha_init(SHA, &g_sha512_cfg);
     sha_enable();
 
     /* Enable SHA interrupt */
@@ -106,9 +127,6 @@ void mbedtls_sha512_free(mbedtls_sha512_context *ctx)
     SHA512_VALIDATE(ctx != NULL);
 
     memset(ctx, 0, sizeof(mbedtls_sha512_context));
-
-    /* Disable the SHA module */
-    sha_disable();
 }
 
 /*
@@ -138,22 +156,22 @@ int mbedtls_sha512_starts_ret(mbedtls_sha512_context *ctx, int is384)
     ctx->is384 = is384;
 
     /* Configure the SHA */
-    g_sha_cfg.start_mode = SHA_MANUAL_START;
-    g_sha_cfg.aoe = false;
-    g_sha_cfg.procdly = false;
-    g_sha_cfg.uihv = false;
-    g_sha_cfg.uiehv = false;
-    g_sha_cfg.bpe = false;
+    g_sha512_cfg.start_mode = SHA_MANUAL_START;
+    g_sha512_cfg.aoe = false;
+    g_sha512_cfg.procdly = false;
+    g_sha512_cfg.uihv = false;
+    g_sha512_cfg.uiehv = false;
+    g_sha512_cfg.bpe = false;
     if (is384 == 0) {
-        g_sha_cfg.algo = SHA_ALGO_SHA512;
+        g_sha512_cfg.algo = SHA_ALGO_SHA512;
     } else {
-        g_sha_cfg.algo = SHA_ALGO_SHA384;
+        g_sha512_cfg.algo = SHA_ALGO_SHA384;
     }
-    g_sha_cfg.tmpclk = false;
-    g_sha_cfg.dualbuff = false;
-    g_sha_cfg.check = SHA_NO_CHECK;
-    g_sha_cfg.chkcnt = 0;
-    sha_set_config(SHA, &g_sha_cfg);
+    g_sha512_cfg.tmpclk = false;
+    g_sha512_cfg.dualbuff = false;
+    g_sha512_cfg.check = SHA_NO_CHECK;
+    g_sha512_cfg.chkcnt = 0;
+    sha_set_config(SHA, &g_sha512_cfg);
 
     /* No automatic padding */
     sha_set_msg_size(SHA, 0);
@@ -252,7 +270,7 @@ int mbedtls_sha512_finish_ret(mbedtls_sha512_context *ctx, unsigned char output[
     }
 
     /*
-    * Add message length
+    * Add message length (multiply by 8 to get number of bits)
     */
     high = (ctx->total[0] >> 61) | (ctx->total[1] <<  3);
     low = (ctx->total[0] <<  3);
@@ -267,16 +285,16 @@ int mbedtls_sha512_finish_ret(mbedtls_sha512_context *ctx, unsigned char output[
     /*
     * Output final state
     */
-    sha512_put_uint64_be(ctx->state[0], output, 0);
-    sha512_put_uint64_be(ctx->state[1], output, 8);
-    sha512_put_uint64_be(ctx->state[2], output, 16);
-    sha512_put_uint64_be(ctx->state[3], output, 24);
-    sha512_put_uint64_be(ctx->state[4], output, 32);
-    sha512_put_uint64_be(ctx->state[5], output, 40);
+    sha512_put_uint64_be_local(ctx->state[0], output, 0);
+    sha512_put_uint64_be_local(ctx->state[1], output, 8);
+    sha512_put_uint64_be_local(ctx->state[2], output, 16);
+    sha512_put_uint64_be_local(ctx->state[3], output, 24);
+    sha512_put_uint64_be_local(ctx->state[4], output, 32);
+    sha512_put_uint64_be_local(ctx->state[5], output, 40);
 
     if (ctx->is384 == 0) {
-        sha512_put_uint64_be(ctx->state[6], output, 48);
-        sha512_put_uint64_be(ctx->state[7], output, 56);
+        sha512_put_uint64_be_local(ctx->state[6], output, 48);
+        sha512_put_uint64_be_local(ctx->state[7], output, 56);
     }
 
     return 0;
@@ -284,6 +302,8 @@ int mbedtls_sha512_finish_ret(mbedtls_sha512_context *ctx, unsigned char output[
 
 int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned char data[128])
 {
+    unsigned int i;
+
     SHA512_VALIDATE_RET(ctx != NULL);
     SHA512_VALIDATE_RET((const unsigned char *)data != NULL);
 
@@ -299,10 +319,17 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned 
     }
 
     /* Copy intermediate result */
+    i = 0;
+    while (i < (SHA_HASH_SIZE_SHA384 / 2)) {
+        ctx->state[i] = (sha512_output_data[i] << 32) | sha512_output_data[i + 1];
+        i += 2;
+    }
+
     if (ctx->is384 == 0) {
-        memcpy(ctx->state, output_data, SHA_HASH_SIZE_SHA512 / 2);
-    } else {
-        memcpy(ctx->state, output_data, SHA_HASH_SIZE_SHA384 / 2);
+		while (i < (SHA_HASH_SIZE_SHA512 / 2)) {
+			ctx->state[i] = (sha512_output_data[i] << 32) | sha512_output_data[i + 1];
+            i += 2;
+		}
     }
 
     return 0;

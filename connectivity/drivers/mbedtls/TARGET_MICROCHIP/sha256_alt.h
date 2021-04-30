@@ -24,8 +24,6 @@
 
 #if defined(MBEDTLS_SHA256_ALT)
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -41,10 +39,6 @@ typedef struct mbedtls_sha256_context_s {
                                      0: Use SHA-256, or 1: Use SHA-224 */
 }
 mbedtls_sha256_context;
-
-
-/* Internal use */
-int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned char data[64]);
 
 #ifdef __cplusplus
 }

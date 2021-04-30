@@ -45,11 +45,19 @@
 }
 #endif
 
+#define PUT_UINT32_BE_local(n,b,i)                   \
+{                                                    \
+    (b)[(i) + 3] = (unsigned char)((n) >> 24);       \
+    (b)[(i) + 2] = (unsigned char)((n) >> 16);       \
+    (b)[(i) + 1] = (unsigned char)((n) >> 8);        \
+    (b)[(i)    ] = (unsigned char)((n));             \
+}
+
 /* Output data array */
-static uint32_t output_data[SHA_HASH_SIZE_SHA512];
+static uint32_t sha1_output_data[SHA_HASH_SIZE_SHA512];
 
 /* SHA configuration */
-struct sha_config g_sha_cfg;
+struct sha_config g_sha1_cfg;
 
 /* State indicate */
 volatile bool b_sha1_state = false;
@@ -62,7 +70,7 @@ static void sha1_callback(uint8_t uc_data)
     (void)uc_data;
 
     /* Read the output */
-    sha_read_output_data(SHA, output_data);
+    sha_read_output_data(SHA, sha1_output_data);
     b_sha1_state = true;
 }
 
@@ -76,8 +84,8 @@ void mbedtls_sha1_init(mbedtls_sha1_context *ctx)
     memset(ctx, 0, sizeof(mbedtls_sha1_context));
 
     /* Enable the SHA module */
-    sha_get_config_defaults(&g_sha_cfg);
-    sha_init(SHA, &g_sha_cfg);
+    sha_get_config_defaults(&g_sha1_cfg);
+    sha_init(SHA, &g_sha1_cfg);
     sha_enable();
 
     /* Enable SHA interrupt */
@@ -92,9 +100,6 @@ void mbedtls_sha1_free( mbedtls_sha1_context *ctx )
     SHA1_VALIDATE(ctx != NULL);
 
     memset(ctx, 0, sizeof(mbedtls_sha1_context));
-
-    /* Disable the SHA module */
-    sha_disable();
 }
 
 /*
@@ -121,18 +126,18 @@ int mbedtls_sha1_starts_ret(mbedtls_sha1_context *ctx)
     SHA1_VALIDATE(ctx != NULL);
 
     /* Configure the SHA */
-    g_sha_cfg.start_mode = SHA_MANUAL_START;
-    g_sha_cfg.aoe = false;
-    g_sha_cfg.procdly = false;
-    g_sha_cfg.uihv = false;
-    g_sha_cfg.uiehv = false;
-    g_sha_cfg.bpe = false;
-    g_sha_cfg.algo = SHA_ALGO_SHA1;
-    g_sha_cfg.tmpclk = false;
-    g_sha_cfg.dualbuff = false;
-    g_sha_cfg.check = SHA_NO_CHECK;
-    g_sha_cfg.chkcnt = 0;
-    sha_set_config(SHA, &g_sha_cfg);
+    g_sha1_cfg.start_mode = SHA_MANUAL_START;
+    g_sha1_cfg.aoe = false;
+    g_sha1_cfg.procdly = false;
+    g_sha1_cfg.uihv = false;
+    g_sha1_cfg.uiehv = false;
+    g_sha1_cfg.bpe = false;
+    g_sha1_cfg.algo = SHA_ALGO_SHA1;
+    g_sha1_cfg.tmpclk = false;
+    g_sha1_cfg.dualbuff = false;
+    g_sha1_cfg.check = SHA_NO_CHECK;
+    g_sha1_cfg.chkcnt = 0;
+    sha_set_config(SHA, &g_sha1_cfg);
 
     /* No automatic padding */
     sha_set_msg_size(SHA, 0);
@@ -232,7 +237,7 @@ int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx, unsigned char output[20])
     }
 
     /*
-    * Add message length
+    * Add message length (multiply by 8 to get number of bits)
     */
     high = (ctx->total[0] >> 29) | (ctx->total[1] << 3);
     low = (ctx->total[0] <<  3);
@@ -247,11 +252,11 @@ int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx, unsigned char output[20])
     /*
     * Output final state
     */
-    PUT_UINT32_BE(ctx->state[0], output, 0);
-    PUT_UINT32_BE(ctx->state[1], output, 4);
-    PUT_UINT32_BE(ctx->state[2], output, 8);
-    PUT_UINT32_BE(ctx->state[3], output, 12);
-    PUT_UINT32_BE(ctx->state[4], output, 16);
+    PUT_UINT32_BE_local(ctx->state[0], output, 0);
+    PUT_UINT32_BE_local(ctx->state[1], output, 4);
+    PUT_UINT32_BE_local(ctx->state[2], output, 8);
+    PUT_UINT32_BE_local(ctx->state[3], output, 12);
+    PUT_UINT32_BE_local(ctx->state[4], output, 16);
 
     return 0;
 }
@@ -261,6 +266,7 @@ int mbedtls_sha1_finish_ret(mbedtls_sha1_context *ctx, unsigned char output[20])
 */
 int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx, const unsigned char data[64])
 {
+    unsigned int i;
     SHA1_VALIDATE_RET(ctx != NULL);
     SHA1_VALIDATE_RET((const unsigned char *)data != NULL);
 
@@ -276,7 +282,9 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx, const unsigned char
     }
 
     /* Copy intermediate result */
-    memcpy(ctx->state, output_data, SHA_HASH_SIZE_SHA1);
+    for (i = 0; i < SHA_HASH_SIZE_SHA1; i++) {
+        ctx->state[i] = sha1_output_data[i];
+    }
 
     return 0;
 }
