@@ -519,7 +519,9 @@ void serial_irq_set(serial_t *obj, SerialIrq irq, uint32_t enable)
             }
         }
 
-        NVIC_DisableIRQ(_serial_get_irq_index(obj));
+        if (!usart_get_interrupt_mask(obj->p_usart)) {
+            NVIC_DisableIRQ(_serial_get_irq_index(obj));
+        }
     }
 }
 

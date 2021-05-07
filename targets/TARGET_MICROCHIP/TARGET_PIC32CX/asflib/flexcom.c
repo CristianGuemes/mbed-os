@@ -36,7 +36,6 @@
 
 #include "flexcom.h"
 #include "sysclk.h"
-#include "sleepmgr.h"
 
 /// @cond 0
 /**INDENT-OFF**/
@@ -55,7 +54,6 @@ extern "C" {
  */
 void flexcom_enable(Flexcom *p_flexcom)
 {
-	sleepmgr_lock_mode(SLEEPMGR_ACTIVE);
 	/* Enable PMC clock for FLEXCOM */
 	 if (p_flexcom == FLEXCOM7) {
 		sysclk_enable_peripheral_clock(ID_FLEXCOM7);
@@ -94,7 +92,6 @@ void flexcom_enable(Flexcom *p_flexcom)
  */
 void flexcom_disable(Flexcom *p_flexcom)
 {
-	sleepmgr_unlock_mode(SLEEPMGR_ACTIVE);
 	/* Enable PMC clock for FLEXCOM */
 	 if (p_flexcom == FLEXCOM7) {
 		 sysclk_disable_peripheral_clock(ID_FLEXCOM7);
