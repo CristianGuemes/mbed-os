@@ -36,6 +36,17 @@
 
 #define ARIA_VALIDATE(cond)        MBEDTLS_INTERNAL_VALIDATE(cond)
 
+/*
+ * 32-bit integer manipulation macros
+ */
+#define GET_UINT32_BE_local(n,b,i)                      \
+{                                                       \
+    (n) = ( (uint32_t) (b)[(i)    ]       )             \
+        | ( (uint32_t) (b)[(i) + 1] <<  8 )             \
+        | ( (uint32_t) (b)[(i) + 2] << 16 )             \
+        | ( (uint32_t) (b)[(i) + 3] << 24 );            \
+}
+
 /* ARIA configuration */
 struct aes_config g_aria_cfg;
 
@@ -96,7 +107,7 @@ static void _aria_unlock(void)
 /**
 * \brief Request ARIA encryption/decryption
 */
-static void _aria_crypt(mbedtls_aria_context *ctx, uint8_t *puc_init_vector, uint8_t *puc_in_text, uint8_t *puc_out_text)
+static void _aria_crypt(mbedtls_aria_context *ctx, uint8_t *puc_in_text, uint8_t *puc_out_text)
 {
     /* Protect context access                                  */
     /* (it may occur at a same time in a threaded environment) */
@@ -105,10 +116,10 @@ static void _aria_crypt(mbedtls_aria_context *ctx, uint8_t *puc_init_vector, uin
     b_aria_state = false;
 
     /* Configure the AES. */
-    g_aria_cfg.encrypt_mode = ctx->encDec;
+    g_aria_cfg.encrypt_mode = (ctx->encDec == MBEDTLS_ARIA_ENCRYPT) ? AES_ENCRYPTION : AES_DECRYPTION;
     g_aria_cfg.key_size = (aes_key_size_t)ctx->keySize;
     g_aria_cfg.start_mode = AES_AUTO_START;
-    g_aria_cfg.opmode = (aes_opmode_t)ctx->opMode;
+    g_aria_cfg.opmode = AES_ECB_MODE;
     g_aria_cfg.cfb_size = AES_CFB_SIZE_128;
     g_aria_cfg.lod = false;
     g_aria_cfg.algo = AES_ALGO_ARIA;
@@ -116,11 +127,6 @@ static void _aria_crypt(mbedtls_aria_context *ctx, uint8_t *puc_init_vector, uin
 
     /* Set the cryptographic key. */
     aes_write_key(AES, (const uint32_t*)ctx->keys);
-
-    /* Set the initialization vector. */
-    if (ctx->opMode != AES_ECB_MODE) {
-        aes_write_initvector(AES, (uint32_t const *)puc_init_vector);
-    }
 
     /* Set the pointer to the output data */
     spul_output_data = (uint32_t *)puc_out_text;
@@ -146,6 +152,8 @@ int _aria_setkey( mbedtls_aria_context *ctx,
                  const unsigned char *key,
                  unsigned int keybits )
 {
+    unsigned int i;
+
     /* Set the key size */
     switch (keybits) {
     case 128:
@@ -161,7 +169,10 @@ int _aria_setkey( mbedtls_aria_context *ctx,
         return MBEDTLS_ERR_ARIA_INVALID_KEY_LENGTH;
     }
 
-    memcpy(ctx->keys, key, keybits / 32);
+    /* Fetch key byte data */
+    for (i = 0; i < (keybits >> 5); i++) {
+        GET_UINT32_BE_local(ctx->keys[i], key, i * 4);
+    }
 
     return 0;
 }
@@ -230,11 +241,8 @@ int mbedtls_aria_crypt_ecb( mbedtls_aria_context *ctx,
     ARIA_VALIDATE_RET(input != NULL);
     ARIA_VALIDATE_RET(output != NULL);
 
-    /* Set mode */
-    ctx->opMode = AES_ECB_MODE;
-
     /* Call AES module */
-    _aria_crypt(ctx, NULL, (uint8_t *)input, (uint8_t *)output);
+    _aria_crypt(ctx, (uint8_t *)input, (uint8_t *)output);
 
     return 0;
 }
@@ -250,6 +258,9 @@ int mbedtls_aria_crypt_cbc( mbedtls_aria_context *ctx,
                            const unsigned char *input,
                            unsigned char *output )
 {
+    int i;
+    unsigned char temp[MBEDTLS_ARIA_BLOCKSIZE];
+
     ARIA_VALIDATE_RET(ctx != NULL);
     ARIA_VALIDATE_RET(mode == MBEDTLS_ARIA_ENCRYPT ||
                       mode == MBEDTLS_ARIA_DECRYPT);
@@ -261,29 +272,29 @@ int mbedtls_aria_crypt_cbc( mbedtls_aria_context *ctx,
         return MBEDTLS_ERR_ARIA_INVALID_INPUT_LENGTH;
     }
 
-    /* Set mode */
-    ctx->opMode = AES_CBC_MODE;
-
-    /* Check encrypt/decrypt */
-    if(mode == MBEDTLS_ARIA_DECRYPT) {
+    if (mode == MBEDTLS_ARIA_DECRYPT) {
         while (length > 0) {
-            /* Call AES module for one block */
-            _aria_crypt(ctx, (uint8_t *)iv, (uint8_t *)input, (uint8_t *)output);
+            memcpy(temp, input, MBEDTLS_ARIA_BLOCKSIZE);
+            mbedtls_aria_crypt_ecb(ctx, input, output);
 
-            /* Set new init vector */
-            memcpy(iv, input, MBEDTLS_ARIA_BLOCKSIZE);
+            for (i = 0; i < MBEDTLS_ARIA_BLOCKSIZE; i++) {
+                output[i] = (unsigned char)(output[i] ^ iv[i]);
+            }
+
+            memcpy(iv, temp, MBEDTLS_ARIA_BLOCKSIZE);
 
             input  += MBEDTLS_ARIA_BLOCKSIZE;
             output += MBEDTLS_ARIA_BLOCKSIZE;
             length -= MBEDTLS_ARIA_BLOCKSIZE;
         }
     }
-    else { /* MBEDTLS_ARIA_ENCRYPT */
+    else {
         while (length > 0) {
-            /* Call AES module for one block */
-            _aria_crypt(ctx, (uint8_t *)iv, (uint8_t *)input, (uint8_t *)output);
+            for (i = 0; i < MBEDTLS_ARIA_BLOCKSIZE; i++) {
+                output[i] = (unsigned char)(input[i] ^ iv[i]);
+            }
 
-            /* Set new init vector */
+            mbedtls_aria_crypt_ecb(ctx, output, output);
             memcpy(iv, output, MBEDTLS_ARIA_BLOCKSIZE);
 
             input  += MBEDTLS_ARIA_BLOCKSIZE;
@@ -308,7 +319,8 @@ int mbedtls_aria_crypt_cfb128( mbedtls_aria_context *ctx,
                               const unsigned char *input,
                               unsigned char *output )
 {
-    size_t n = (iv_off != NULL) ? *iv_off : 0;
+    unsigned char c;
+    size_t n;
 
     ARIA_VALIDATE_RET(ctx != NULL);
     ARIA_VALIDATE_RET(mode == MBEDTLS_ARIA_ENCRYPT ||
@@ -318,50 +330,38 @@ int mbedtls_aria_crypt_cfb128( mbedtls_aria_context *ctx,
     ARIA_VALIDATE_RET(input != NULL);
     ARIA_VALIDATE_RET(output != NULL);
 
+    n = *iv_off;
+
     if (n >= MBEDTLS_ARIA_BLOCKSIZE) {
         return MBEDTLS_ERR_ARIA_BAD_INPUT_DATA;
     }
 
-    if ((n > 0) || (length & 0xf)) {
-        /* IV offset or length not aligned to block size */
-        int c;
-
-        if (mode == MBEDTLS_ARIA_DECRYPT) {
-            while (length--) {
-                if (n == 0) {
-                    mbedtls_aria_crypt_ecb(ctx, iv, iv);
-                }
-
-                c = *input++;
-                *output++ = (unsigned char)(c ^ iv[n]);
-                iv[n] = (unsigned char)c;
-
-                n = (n + 1) & 0x0F;
+    if (mode == MBEDTLS_ARIA_DECRYPT) {
+        while (length--) {
+            if (n == 0) {
+                mbedtls_aria_crypt_ecb(ctx, iv, iv);
             }
-        }
-        else {
-            while (length--) {
-                if (n == 0) {
-                    mbedtls_aria_crypt_ecb(ctx, iv, iv);
-                }
 
-                iv[n] = *output++ = (unsigned char)(iv[n] ^ *input++);
+            c = *input++;
+            *output++ = (unsigned char)(c ^ iv[n]);
+            iv[n] = (unsigned char)c;
 
-                n = (n + 1) & 0x0F;
-            }
-        }
-
-        if (iv_off) {
-            *iv_off = n;
+            n = (n + 1) & 0x0F;
         }
     }
     else {
-        /* Set mode */
-        ctx->opMode = AES_CFB_MODE;
+        while (length--) {
+            if (n == 0) {
+                mbedtls_aria_crypt_ecb(ctx, iv, iv);
+            }
 
-        /* Call AES module for one block */
-        _aria_crypt(ctx, (uint8_t *)iv, (uint8_t *)input, (uint8_t *)output);
+            iv[n] = *output++ = (unsigned char)(iv[n] ^ *input++);
+
+            n = (n + 1) & 0x0F;
+        }
     }
+
+    *iv_off = n;
 
     return 0;
 }
@@ -380,7 +380,7 @@ int mbedtls_aria_crypt_ctr( mbedtls_aria_context *ctx,
                            unsigned char *output )
 {
     int c, i;
-    size_t n = *nc_off;
+    size_t n;
 
     ARIA_VALIDATE_RET(ctx != NULL);
     ARIA_VALIDATE_RET(length == 0 || input  != NULL);
@@ -388,6 +388,8 @@ int mbedtls_aria_crypt_ctr( mbedtls_aria_context *ctx,
     ARIA_VALIDATE_RET(nonce_counter != NULL);
     ARIA_VALIDATE_RET(stream_block  != NULL);
     ARIA_VALIDATE_RET(nc_off != NULL);
+
+    n = *nc_off;
 
     if (n >= MBEDTLS_ARIA_BLOCKSIZE) {
         return MBEDTLS_ERR_ARIA_BAD_INPUT_DATA;

@@ -32,7 +32,6 @@ extern "C" {
 typedef struct
 {
     uint8_t keySize;        /* Key size: AES_KEY_SIZE_128/192/256 */
-    uint8_t opMode;         /* ECB/CBC/CFB/OFB/CTR */
     uint32_t keys[8];       /* Cipher key */
 }
 mbedtls_aes_context;

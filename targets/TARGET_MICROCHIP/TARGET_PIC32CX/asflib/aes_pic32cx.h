@@ -170,14 +170,14 @@ enum aes_start_mode {
 };
 
 /** AES cipher block mode. */
-typedef enum aes_opmode {
+enum aes_opmode {
 	AES_ECB_MODE = 0,		/**< Electronic Codebook (ECB). */
 	AES_CBC_MODE,			/**< Cipher Block Chaining (CBC). */
 	AES_OFB_MODE,			/**< Output Feedback (OFB). */
 	AES_CFB_MODE,			/**< Cipher Feedback (CFB). */
 	AES_CTR_MODE,			/**< Counter (CTR). */
 	AES_GCM_MODE,			/**< Galois Counter Mode (GCM).*/
-} aes_opmode_t;
+};
 
 /** AES Cipher FeedBack (CFB) size. */
 enum aes_cfb_size {
