@@ -47,12 +47,15 @@ const ticker_info_t* us_ticker_get_info()
 }
 
 static bool us_ticker_inited = false;
+static volatile bool fire_int_flag = false;
+
 
 /** @brief	Interrupt handler for USTIMER
 */
 void USTIMER_TC_Handler(void)
 {
-    if (USTIMER_TC->TC_CHANNEL[USTIMER_TC_CHN].TC_SR & TC_SR_CPCS) {
+    if ((USTIMER_TC->TC_CHANNEL[USTIMER_TC_CHN].TC_SR & TC_SR_CPCS) || (fire_int_flag)) {
+		fire_int_flag = false;
         /* Trigger events */
         us_ticker_irq_handler();
     }
@@ -148,6 +151,7 @@ void us_ticker_clear_interrupt(void)
 
 void us_ticker_fire_interrupt(void)
 {
+	fire_int_flag = true;
     NVIC_EnableIRQ(USTIMER_TC_IRQn);
     NVIC_SetPendingIRQ(USTIMER_TC_IRQn);
 }
