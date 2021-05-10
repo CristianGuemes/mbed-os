@@ -962,6 +962,26 @@ void UART_Handler         ( void );
 #define CHIP_FREQ_CPU_MAX               (200000000UL)
 #define CHIP_FREQ_XTAL_32K              (32768UL)
 
+/* ************************************************************************** */
+#ifdef NVIC_SystemReset
+//#warning "NVIC_SystemReset has been redirected"
+#undef NVIC_SystemReset
+#endif
+#define NVIC_SystemReset     __NVIC_SystemResetRedir
+
+__NO_RETURN __STATIC_INLINE void __NVIC_SystemResetRedir(void)
+{
+	__DSB();
+
+	RSTC->RSTC_CR = RSTC_CR_KEY_PASSWD | RSTC_CR_PROCRST | RSTC_CR_PERRST;
+
+	__DSB();
+
+	for(;;) {
+		__NOP();
+	}
+}
+
 #ifdef __cplusplus
 }
 #endif

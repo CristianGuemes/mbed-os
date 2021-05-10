@@ -357,7 +357,14 @@ extern void sysclk_set_source(uint32_t ul_src);
 
 /* @} */
 
+/**
+ * \brief Configure global clock system according to conf_clock.h file.
+ */
 extern void sysclk_init(void);
+/**
+ * \brief Configure clock system during a restart process only for Core0 according to conf_clock.h file.
+ */
+extern void sysclk_restart_core0(void);
 
 /* ! @} */
 

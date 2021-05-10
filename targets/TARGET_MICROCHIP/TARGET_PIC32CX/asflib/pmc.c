@@ -1645,7 +1645,7 @@ void pmc_enable_waitmode(void)
 	/* Execute the Wait-For-Event (WFE) instruction of the processor */
 	__DSB();
 //	__WFE();
-	__WFI();
+	PMC->CKGR_MOR |= CKGR_MOR_WAITMODE;
 
 	/* Restore Flash in idle mode */
 	pmc_force_flash_in_wait_mode(PMC_FSMR_FLPM_FLASH_IDLE);

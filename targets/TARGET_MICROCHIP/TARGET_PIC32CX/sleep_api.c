@@ -26,9 +26,20 @@
 
 #include "sleep_api.h"
 #include "pic32cx.h"
-#include "sleep.h"
 #include "pmc.h"
 #include "supc.h"
+#include "interrupt_sam_nvic.h"
+
+/** (SCR) Sleep deep bit */
+#define SCR_SLEEPDEEP   (0x1 <<  2)
+
+//typedef struct {
+//	uint32_t ticks_before;
+//	uint32_t ticks_after;
+//	uint32_t ticks_diff;
+//} ticks_sleep_t;
+//ticks_sleep_t ticks_sleep[32] = {0};
+//uint32_t idx = 0;
 
 /** Send the microcontroller to sleep
 *
@@ -44,7 +55,33 @@
 */
 void hal_sleep(void)
 {
-    pmc_sleep(PIC32CX_PM_SMODE_SLEEP_WFI);
+	irqflags_t cpu_irq_flags;
+
+	cpu_irq_flags = cpu_irq_save();
+
+	cpu_irq_disable();
+
+	/* Enter in sleep mode */
+  	PMC->PMC_FSMR &= (uint32_t) ~PMC_FSMR_LPM;
+	SCB->SCR &= (uint32_t) ~SCR_SLEEPDEEP;
+
+	cpu_irq_enable();
+
+	__DSB();
+
+//	ticks_sleep[idx].ticks_before = TC0->TC_CHANNEL[0].TC_CV;
+//	PIOB->PIO_SODR = 1 << 20;
+
+	__WFI();
+
+//	ticks_sleep[idx].ticks_after = TC0->TC_CHANNEL[0].TC_CV;
+//	PIOB->PIO_CODR = 1 << 20;
+//	ticks_sleep[idx].ticks_diff = ticks_sleep[idx].ticks_after - ticks_sleep[idx].ticks_before;
+//	idx++;
+
+	cpu_irq_disable();
+
+	cpu_irq_restore(cpu_irq_flags);
 }
 
 /** Send the microcontroller to deep sleep
@@ -59,12 +96,55 @@ void hal_sleep(void)
 */
 void hal_deepsleep(void)
 {
-    /* Set wakeup sources */
-    pmc_set_fast_startup_input(PMC_FSMR_RTTAL | PMC_FSMR_RTCAL);
-    supc_set_backup_mode(SUPC, SUPC_BMR_RTTWKEN | SUPC_BMR_RTCWKEN | SUPC_BMR_FWUPEN);
+	irqflags_t cpu_irq_flags;
 
-    /* Enter wait mode */
-    pmc_sleep(PIC32CX_PM_SMODE_WAIT);
+	cpu_irq_flags = cpu_irq_save();
+
+	cpu_irq_disable();
+
+	/* Select the 12 MHz fast RC Oscillator as Main Clock for the entire system */
+	pmc_switch_mainck_to_fastrc();
+	pmc_switch_mck_to_mainck(0);
+
+	/* Stop Subsystem 1 */
+	pmc_disable_cpck();
+	pmc_disable_cpbmck();
+
+	/* Disable PLLs */
+	pmc_disable_pll(0);
+	pmc_disable_pll(1);
+	pmc_disable_pll(2);
+
+	/* Disable the Main Crystal Oscillator */
+	pmc_osc_disable_main_xtal();
+
+	/* Enter in sleep mode */
+  	PMC->PMC_FSMR &= (uint32_t) ~PMC_FSMR_LPM;
+	SCB->SCR &= (uint32_t) ~SCR_SLEEPDEEP;
+
+	cpu_irq_enable();
+
+	__DSB();
+
+//	ticks_sleep[idx].ticks_before = TC0->TC_CHANNEL[0].TC_CV;
+	TC0->TC_CHANNEL[0].TC_CMR |= TC_CMR_TCCLKS_Msk;
+//	PIOB->PIO_SODR = 1 << 20;
+
+	__WFI();
+
+
+	TC0->TC_CHANNEL[0].TC_CMR &= ~TC_CMR_TCCLKS_Msk;
+//	ticks_sleep[idx].ticks_after = TC0->TC_CHANNEL[0].TC_CV;
+//	PIOB->PIO_CODR = 1 << 20;
+//	ticks_sleep[idx].ticks_diff = ticks_sleep[idx].ticks_after - ticks_sleep[idx].ticks_before;
+//	idx++;
+
+	cpu_irq_disable();
+
+	/* Recall SysInit function to restore clock system by default */
+	sysclk_init();
+
+	cpu_irq_restore(cpu_irq_flags);
 }
 
 #endif
