@@ -56,10 +56,10 @@ typedef struct {
   __I  uint32_t AES_TAGR[4];   /**< \brief (Aes Offset: 0x88) GCM Authentication Tag Word Register */
   __I  uint32_t AES_CTRR;      /**< \brief (Aes Offset: 0x98) GCM Encryption Counter Value Register */
   __IO uint32_t AES_GCMHR[4];  /**< \brief (Aes Offset: 0x9C) GCM H World Register */
-  __I  uint32_t Reserved2[16];
+  __I  uint32_t Reserved2;
   __IO uint32_t AES_EMR;       /**< \brief (Aes Offset: 0xB0) Extended Mode Register */
   __IO uint32_t AES_BCNT;      /**< \brief (Aes Offset: 0xB4) Byte Counter Register */
-  __I  uint32_t Reserved3[12];
+  __I  uint32_t Reserved3[11];
   __IO uint32_t AES_WPMR;      /**< \brief (Aes Offset: 0xE4) Write Protection Mode Register */
   __I  uint32_t AES_WPSR;      /**< \brief (Aes Offset: 0xE8) Write Protection Status Register */
   __I  uint32_t Reserved4[5];
