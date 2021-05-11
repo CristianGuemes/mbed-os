@@ -27,11 +27,11 @@
 /* THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.            */
 /* ---------------------------------------------------------------------------- */
 
-#ifndef _PIC32CX5112MTSH100_
-#define _PIC32CX5112MTSH100_
+#ifndef _PIC32CX5112MTSH128_
+#define _PIC32CX5112MTSH128_
 
-/** \addtogroup PIC32CX5112MTSH100_definitions PIC32CX5112MTSH100 definitions
-  This file defines all structures and symbols for PIC32CX5112MTSH100:
+/** \addtogroup PIC32CX5112MTSH128_definitions PIC32CX5112MTSH128 definitions
+  This file defines all structures and symbols for PIC32CX5112MTSH128:
     - registers and bitfields
     - peripheral base address
     - peripheral ID
@@ -48,9 +48,9 @@
 #endif
 
 /* ************************************************************************** */
-/*   CMSIS DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   CMSIS DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
-/** \addtogroup PIC32CX5112MTSH100_cmsis CMSIS Definitions */
+/** \addtogroup PIC32CX5112MTSH128_cmsis CMSIS Definitions */
 /*@{*/
 
 /**< Interrupt Number Definition */
@@ -66,13 +66,14 @@ typedef enum IRQn
   DebugMonitor_IRQn     = -4,  /**< 12 Cortex-M4 Debug Monitor Interrupt     */
   PendSV_IRQn           = -2,  /**< 14 Cortex-M4 Pend SV Interrupt           */
   SysTick_IRQn          = -1,  /**< 15 Cortex-M4 System Tick Interrupt       */
-/******  PIC32CX5112MTSH100 specific Interrupt Numbers *********************************/
+/******  PIC32CX5112MTSH128 specific Interrupt Numbers *********************************/
   
   SUPC_IRQn            =  0, /**<  0 Supply Controller (SUPC) */
   RSTC_IRQn            =  1, /**<  1 Reset Controller (RSTC) */
   RTC_IRQn             =  2, /**<  2 Real Time Clock (RTC) */
   RTT_IRQn             =  3, /**<  3 Real Time Timer (RTT) */
-  DWDT_IRQn            =  4, /**<  4 Dual Watchdog Timer (DWDT) */
+  DWDT0_IRQn           =  4, /**<  4 Dual Watchdog 0 Timer (DWDT0) */
+  DWDT1_IRQn           =  5, /**<  4 Dual Watchdog 1 Timer (DWDT1) */
   PMC_IRQn             =  6, /**<  6 Power Management Controller (PMC) */
   SEFC0_IRQn           =  7, /**<  7 Embedded Flash Controller 0 (SEFC0) */
   SEFC1_IRQn           =  8, /**<  8 Embedded Flash Controller 1 (SEFC1) */
@@ -192,8 +193,8 @@ typedef struct _DeviceVectors
   void* pfnRSTC_Handler;         /*  1 Reset Controller */
   void* pfnRTC_Handler;          /*  2 Real Time Clock */
   void* pfnRTT_Handler;          /*  3 Real Time Timer */
-  void* pfnDWDT_Handler;         /*  4 Dual Watchdog Timer */
-  void* pvReserved5;
+  void* pfnDWDT0_Handler;        /*  4 Dual Watchdog 0 Timer */
+  void* pfnDWDT1_Handler;        /*  5 Dual Watchdog 1 Timer */
   void* pfnPMC_Handler;          /*  6 Power Management Controller */
   void* pfnSEFC0_Handler;        /*  7 Embedded Flash Controller 0 */
   void* pfnSEFC1_Handler;        /*  8 Embedded Flash Controller 1 */
@@ -311,7 +312,8 @@ void ARM0_IXC_Handler     ( void );
 void ARM1_FPU_Handler     ( void );
 void ARM1_IXC_Handler     ( void );
 void CPKCC_Handler        ( void );
-void DWDT_Handler         ( void );
+void DWDT0_Handler        ( void );
+void DWDT1_Handler        ( void );
 void FLEXCOM0_Handler     ( void );
 void FLEXCOM1_Handler     ( void );
 void FLEXCOM2_Handler     ( void );
@@ -398,10 +400,10 @@ void UART_Handler         ( void );
  * \brief Configuration of the Cortex-M4 Processor and Core Peripherals 
  */
 
-#define __CM4_REV              0x0001 /**< PIC32CX5112MTSH100 core revision number ([15:8] revision number, [7:0] patch number) */
-#define __MPU_PRESENT          1      /**< PIC32CX5112MTSH100 does provide a MPU */
-#define __FPU_PRESENT          1      /**< PIC32CX5112MTSH100 does provide a FPU */
-#define __NVIC_PRIO_BITS       4      /**< PIC32CX5112MTSH100 uses 4 Bits for the Priority Levels */
+#define __CM4_REV              0x0001 /**< PIC32CX5112MTSH128 core revision number ([15:8] revision number, [7:0] patch number) */
+#define __MPU_PRESENT          1      /**< PIC32CX5112MTSH128 does provide a MPU */
+#define __FPU_PRESENT          1      /**< PIC32CX5112MTSH128 does provide a FPU */
+#define __NVIC_PRIO_BITS       4      /**< PIC32CX5112MTSH128 uses 4 Bits for the Priority Levels */
 #define __Vendor_SysTickConfig 0      /**< Set to 1 if different SysTick Config is used */
 
 /*
@@ -416,9 +418,9 @@ void UART_Handler         ( void );
 /*@}*/
 
 /* ************************************************************************** */
-/**  SOFTWARE PERIPHERAL API DEFINITION FOR PIC32CX5112MTSH100 */
+/**  SOFTWARE PERIPHERAL API DEFINITION FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
-/** \addtogroup PIC32CX5112MTSH100_api Peripheral Software API */
+/** \addtogroup PIC32CX5112MTSH128_api Peripheral Software API */
 /*@{*/
 
 #include "component/acc.h"
@@ -461,9 +463,9 @@ void UART_Handler         ( void );
 /*@}*/
 
 /* ************************************************************************** */
-/*   REGISTER ACCESS DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   REGISTER ACCESS DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
-/** \addtogroup PIC32CX5112MTSH100_reg Registers Access Definitions */
+/** \addtogroup PIC32CX5112MTSH128_reg Registers Access Definitions */
 /*@{*/
 
 #include "instance/flexcom0.h"
@@ -542,16 +544,17 @@ void UART_Handler         ( void );
 /*@}*/
 
 /* ************************************************************************** */
-/*   PERIPHERAL ID DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   PERIPHERAL ID DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
-/** \addtogroup PIC32CX5112MTSH100_id Peripheral Ids Definitions */
+/** \addtogroup PIC32CX5112MTSH128_id Peripheral Ids Definitions */
 /*@{*/
 
 #define ID_SUPC         ( 0) /**< \brief Supply Controller (SUPC) */
 #define ID_RSTC         ( 1) /**< \brief Reset Controller (RSTC) */
 #define ID_RTC          ( 2) /**< \brief Real Time Clock (RTC) */
 #define ID_RTT          ( 3) /**< \brief Real Time Timer (RTT) */
-#define ID_DWDT         ( 4) /**< \brief Dual Watchdog Timer (DWDT) */
+#define ID_DWDT0        ( 4) /**< \brief Dual Watchdog 0 Timer (DWDT0) */
+#define ID_DWDT1        ( 5) /**< \brief Dual Watchdog 1 Timer (DWDT1) */
 #define ID_PMC          ( 6) /**< \brief Power Management Controller (PMC) */
 #define ID_SEFC0        ( 7) /**< \brief Embedded Flash Controller 0 (SEFC0) */
 #define ID_SEFC1        ( 8) /**< \brief Embedded Flash Controller 1 (SEFC1) */
@@ -647,9 +650,9 @@ void UART_Handler         ( void );
 /*@}*/
 
 /* ************************************************************************** */
-/*   BASE ADDRESS DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   BASE ADDRESS DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
-/** \addtogroup PIC32CX5112MTSH100_base Peripheral Base Address Definitions */
+/** \addtogroup PIC32CX5112MTSH128_base Peripheral Base Address Definitions */
 /*@{*/
 
 #if (defined(__ASSEMBLY__) || defined(__IAR_SYSTEMS_ASM__))
@@ -902,16 +905,16 @@ void UART_Handler         ( void );
 /*@}*/
 
 /* ************************************************************************** */
-/*   PIO DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   PIO DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
-/** \addtogroup PIC32CX5112MTSH100_pio Peripheral Pio Definitions */
+/** \addtogroup PIC32CX5112MTSH128_pio Peripheral Pio Definitions */
 /*@{*/
 
-#include "pio/pic32cx5112mtsh100.h"
+#include "pio/pic32cx5112mtsh128.h"
 /*@}*/
 
 /* ************************************************************************** */
-/*   MEMORY MAPPING DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   MEMORY MAPPING DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
 
 #define IFLASH0_SIZE             (0x40000u)
@@ -953,14 +956,14 @@ void UART_Handler         ( void );
 #define CORTEXM_PRIVATE_PB_ADDR (0xE0000000u) /**< Cortex-M Private Peripheral Bus base address */
 
 /* ************************************************************************** */
-/*   MISCELLANEOUS DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   MISCELLANEOUS DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
 
 #define CHIP_CIDR   (0x2C3C0AE0UL)
 #define CHIP_EXID   (0x00000000UL)
 
 /* ************************************************************************** */
-/*   ELECTRICAL DEFINITIONS FOR PIC32CX5112MTSH100 */
+/*   ELECTRICAL DEFINITIONS FOR PIC32CX5112MTSH128 */
 /* ************************************************************************** */
 
 /* Device characteristics */
