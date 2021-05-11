@@ -36,7 +36,7 @@
 
 #include "sha.h"
 #include <sysclk.h>
-#include <sleepmgr.h>
+#include <interrupt_sam_nvic.h>
 
 /// @cond
 /**INDENT-OFF**/
@@ -130,7 +130,6 @@ void sha_init(Sha *p_sha, struct sha_config *p_cfg)
 void sha_enable(void)
 {
 	sysclk_enable_peripheral_clock(ID_SHA);
-	sleepmgr_lock_mode(SLEEPMGR_SLEEP_WFI);
 }
 
 /**
@@ -139,7 +138,6 @@ void sha_enable(void)
 void sha_disable(void)
 {
 	sysclk_disable_peripheral_clock(ID_SHA);
-	sleepmgr_unlock_mode(SLEEPMGR_SLEEP_WFI);
 }
 
 /**
@@ -229,7 +227,7 @@ void sha_set_writeprotect(Sha *p_sha, bool enable, bool int_enable, bool control
 	if (int_enable) {
 		ul_reg |= SHA_WPMR_WPITEN;
 	}
-	  
+
 	if (control_enable) {
 		ul_reg |= SHA_WPMR_WPCREN;
 	}
@@ -322,7 +320,7 @@ void sha_write_input_data(Sha *p_sha, uint32_t *p_input_data_buffer, uint8_t uc_
 		uc_len1 = 16;
 		uc_len2 = 16;
 	}
-	
+
 	for (i = 0; i < uc_len1; i++) {
 			p_sha->SHA_IDATAR[i] = *p_input_data_buffer;
 			p_input_data_buffer++;
@@ -352,7 +350,7 @@ void sha_read_output_data(Sha *p_sha, uint32_t *p_output_data_buffer)
 	/* Validate arguments. */
 	Assert(p_sha);
 	Assert(p_output_data_buffer);
-	
+
 	for (i = 0; i < 16; i++) {
 		*p_output_data_buffer = p_sha->SHA_IODATAR[i];
 		p_output_data_buffer++;
@@ -370,7 +368,7 @@ Pdc *sha_get_pdc_base(Sha *p_sha)
 {
 	/* Validate arguments. */
 	Assert(p_sha);
-	
+
 	Pdc *p_pdc_base;
 	if (p_sha == SHA) {
 		p_pdc_base = PDC_SHA;
@@ -426,7 +424,7 @@ void sha_set_callback(Sha *p_sha, sha_interrupt_source_t source, sha_callback_t 
 	default:
 		return;
 	}
-	
+
 	irq_register_handler((IRQn_Type)SHA_IRQn, irq_level);
 	sha_enable_interrupt(p_sha, source);
 }

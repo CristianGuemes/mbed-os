@@ -39,7 +39,7 @@
 
 #include "aes_pic32cx.h"
 #include <sysclk.h>
-#include <sleepmgr.h>
+#include <interrupt_sam_nvic.h>
 
 /**
  * \internal
@@ -134,7 +134,6 @@ void aes_init(
 void aes_enable(void)
 {
 	sysclk_enable_peripheral_clock(ID_AES);
-	sleepmgr_lock_mode(SLEEPMGR_SLEEP_WFI);
 }
 
 /**
@@ -143,7 +142,6 @@ void aes_enable(void)
 void aes_disable(void)
 {
 	sysclk_disable_peripheral_clock(ID_AES);
-	sleepmgr_unlock_mode(SLEEPMGR_SLEEP_WFI);
 }
 
 /**
