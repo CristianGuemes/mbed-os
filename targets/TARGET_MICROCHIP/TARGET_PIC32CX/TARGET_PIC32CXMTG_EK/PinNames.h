@@ -58,69 +58,69 @@ typedef enum {
     A29 = PIO_PA29_IDX,
     A30 = PIO_PA30_IDX,
     A31 = PIO_PA31_IDX,
-	B0  = PIO_PB0_IDX,
-	B1  = PIO_PB1_IDX,
-	B2  = PIO_PB2_IDX,
-	B3  = PIO_PB3_IDX,
-	B4  = PIO_PB4_IDX,
-	B5  = PIO_PB5_IDX,
-	B6  = PIO_PB6_IDX,
-	B7  = PIO_PB7_IDX,
-	B8  = PIO_PB8_IDX,
-	B9  = PIO_PB9_IDX,
-	B10 = PIO_PB10_IDX,
-	B11 = PIO_PB11_IDX,
-	B12 = PIO_PB12_IDX,
-	B18 = PIO_PB18_IDX,
-	B19 = PIO_PB19_IDX,
-	B20 = PIO_PB20_IDX,
-	B21 = PIO_PB21_IDX,
-	B22 = PIO_PB22_IDX,
-	B23 = PIO_PB23_IDX,
-	B24 = PIO_PB24_IDX,
-	B25 = PIO_PB25_IDX,
-	B26 = PIO_PB26_IDX,
-	C0  = PIO_PC0_IDX,
-	C2  = PIO_PC2_IDX,
-	C3  = PIO_PC3_IDX,
-	C4  = PIO_PC4_IDX,
-	C5  = PIO_PC5_IDX,
-	C6  = PIO_PC6_IDX,
-	C7  = PIO_PC7_IDX,
-	C10 = PIO_PC10_IDX,
-	C11 = PIO_PC11_IDX,
-	C12 = PIO_PC12_IDX,
-	C13 = PIO_PC13_IDX,
-	C14 = PIO_PC14_IDX,
-	C15 = PIO_PC15_IDX,
-	C18 = PIO_PC18_IDX,
-	C19 = PIO_PC19_IDX,
-	C20 = PIO_PC20_IDX,
-	C21 = PIO_PC21_IDX,
-	C22 = PIO_PC22_IDX,
-	D0  = PIO_PD0_IDX,
-	D1  = PIO_PD1_IDX,
-	D2  = PIO_PD2_IDX,
-	D4  = PIO_PD4_IDX,
-	D5  = PIO_PD5_IDX,
-	D6  = PIO_PD6_IDX,
-	D7  = PIO_PD7_IDX,
-	D8  = PIO_PD8_IDX,
-	D9  = PIO_PD9_IDX,
-	D10 = PIO_PD10_IDX,
-	D11 = PIO_PD11_IDX,
-	D14 = PIO_PD14_IDX,
-	D15 = PIO_PD15_IDX,
-	D16 = PIO_PD16_IDX,
-	D17 = PIO_PD17_IDX,
-	D18 = PIO_PD18_IDX,
-	D19 = PIO_PD19_IDX,
+    B0  = PIO_PB0_IDX,
+    B1  = PIO_PB1_IDX,
+    B2  = PIO_PB2_IDX,
+    B3  = PIO_PB3_IDX,
+    B4  = PIO_PB4_IDX,
+    B5  = PIO_PB5_IDX,
+    B6  = PIO_PB6_IDX,
+    B7  = PIO_PB7_IDX,
+    B8  = PIO_PB8_IDX,
+    B9  = PIO_PB9_IDX,
+    B10 = PIO_PB10_IDX,
+    B11 = PIO_PB11_IDX,
+    B12 = PIO_PB12_IDX,
+    B18 = PIO_PB18_IDX,
+    B19 = PIO_PB19_IDX,
+    B20 = PIO_PB20_IDX,
+    B21 = PIO_PB21_IDX,
+    B22 = PIO_PB22_IDX,
+    B23 = PIO_PB23_IDX,
+    B24 = PIO_PB24_IDX,
+    B25 = PIO_PB25_IDX,
+    B26 = PIO_PB26_IDX,
+    C0  = PIO_PC0_IDX,
+    C2  = PIO_PC2_IDX,
+    C3  = PIO_PC3_IDX,
+    C4  = PIO_PC4_IDX,
+    C5  = PIO_PC5_IDX,
+    C6  = PIO_PC6_IDX,
+    C7  = PIO_PC7_IDX,
+    C10 = PIO_PC10_IDX,
+    C11 = PIO_PC11_IDX,
+    C12 = PIO_PC12_IDX,
+    C13 = PIO_PC13_IDX,
+    C14 = PIO_PC14_IDX,
+    C15 = PIO_PC15_IDX,
+    C18 = PIO_PC18_IDX,
+    C19 = PIO_PC19_IDX,
+    C20 = PIO_PC20_IDX,
+    C21 = PIO_PC21_IDX,
+    C22 = PIO_PC22_IDX,
+    D0  = PIO_PD0_IDX,
+    D1  = PIO_PD1_IDX,
+    D2  = PIO_PD2_IDX,
+    D4  = PIO_PD4_IDX,
+    D5  = PIO_PD5_IDX,
+    D6  = PIO_PD6_IDX,
+    D7  = PIO_PD7_IDX,
+    D8  = PIO_PD8_IDX,
+    D9  = PIO_PD9_IDX,
+    D10 = PIO_PD10_IDX,
+    D11 = PIO_PD11_IDX,
+    D14 = PIO_PD14_IDX,
+    D15 = PIO_PD15_IDX,
+    D16 = PIO_PD16_IDX,
+    D17 = PIO_PD17_IDX,
+    D18 = PIO_PD18_IDX,
+    D19 = PIO_PD19_IDX,
 
-	/* Board leds */
+    /* Board leds */
     LED_GREEN = D16,
     LED_BLUE  = D19,
-	LED_PWM0 = D17,
-	LED_PWM1 = D18,
+    LED_PWM0 = D17,
+    LED_PWM1 = D18,
 
     /* mbed original LED naming */
     LED1 = LED_GREEN,
@@ -179,21 +179,21 @@ typedef enum {
 
     /* Xplain Pro SPI */
     XPLAINPRO_SPI_MOSI = A24,
-	XPLAINPRO_SPI_MISO = A23,
-	XPLAINPRO_SPI_SCLK = A22,
-	XPLAINPRO_SPI_CSEL = A21,
+    XPLAINPRO_SPI_MISO = A23,
+    XPLAINPRO_SPI_SCLK = A22,
+    XPLAINPRO_SPI_CSEL = A21,
 
     /* Mikro Bus 1 AN */
     MIKROBUS1_AN = A29,
 
-	/* Mikro Bus 1 PWM */
-	MIKROBUS1_PWM = D17,
+    /* Mikro Bus 1 PWM */
+    MIKROBUS1_PWM = D17,
 
-	/* Mikro Bus 1 RST */
-	MIKROBUS1_RST = A30,
+    /* Mikro Bus 1 RST */
+    MIKROBUS1_RST = A30,
 
-	/* Mikro Bus 1 INT */
-	MIKROBUS1_INT = C7,
+    /* Mikro Bus 1 INT */
+    MIKROBUS1_INT = C7,
 
     /* Mikro Bus 1 Serial */
     MIKROBUS1_SERIAL_TX = D2,
@@ -205,21 +205,21 @@ typedef enum {
 
     /* Mikro Bus 1 SPI */
     MIKROBUS1_SPI_MOSI = B9,
-	MIKROBUS1_SPI_MISO = B10,
-	MIKROBUS1_SPI_SCLK = B11,
-	MIKROBUS1_SPI_CSEL = B12,
+    MIKROBUS1_SPI_MISO = B10,
+    MIKROBUS1_SPI_SCLK = B11,
+    MIKROBUS1_SPI_CSEL = B12,
 
     /* Mikro Bus 2 AN */
     MIKROBUS2_AN = B0,
 
-	/* Mikro Bus 2 PWM */
-	MIKROBUS2_PWM = D18,
+    /* Mikro Bus 2 PWM */
+    MIKROBUS2_PWM = D18,
 
-	/* Mikro Bus 2 RST */
-	MIKROBUS2_RST = B5,
+    /* Mikro Bus 2 RST */
+    MIKROBUS2_RST = B5,
 
-	/* Mikro Bus 2 INT */
-	MIKROBUS2_INT = B6,
+    /* Mikro Bus 2 INT */
+    MIKROBUS2_INT = B6,
 
     /* Mikro Bus 2 Serial */
     MIKROBUS2_SERIAL_TX = B4,
@@ -231,9 +231,16 @@ typedef enum {
 
     /* Mikro Bus 2 SPI */
     MIKROBUS2_SPI_MOSI = B24,
-	MIKROBUS2_SPI_MISO = B25,
-	MIKROBUS2_SPI_SCLK = B26,
-	MIKROBUS2_SPI_CSEL = C0,
+    MIKROBUS2_SPI_MISO = B25,
+    MIKROBUS2_SPI_SCLK = B26,
+    MIKROBUS2_SPI_CSEL = C0,
+
+    /* Analog Digital Pins */
+    AD_CH0 = A29,
+    AD_CH1 = A30,
+    AD_CH2 = A31,
+    AD_CH3 = B0,
+    AD_CH4 = B1,
 
     /* Not connected */
     NC = (int)0xFFFFFFFF
