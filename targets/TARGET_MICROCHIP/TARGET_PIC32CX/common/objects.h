@@ -30,6 +30,7 @@
 #include "PortNames.h"
 #include "pic32cx.h"
 #include "uart_serial.h"
+#include "adc.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,15 +44,8 @@ typedef struct {
 
 #if DEVICE_ANALOGIN
 struct analogin_s {
-    ADC_TypeDef *adc;
-    uint32_t channel;
-};
-#endif
-
-#if DEVICE_ANALOGOUT
-struct dac_s {
-    DAC_TypeDef *dac;
-    uint32_t channel;
+    Adc *adc;
+    enum adc_channel_num_t channel;
 };
 #endif
 
