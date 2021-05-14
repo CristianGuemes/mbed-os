@@ -38,6 +38,7 @@ typedef struct
     uint32_t state[5];          /*!< intermediate digest state  */
     uint32_t total[2];          /*!< number of bytes processed  */
     unsigned char buffer[64];   /*!< data block being processed */
+	int isfirst;                /*!< First block */
 }
 mbedtls_sha1_context;
 

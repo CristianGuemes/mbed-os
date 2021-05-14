@@ -8,9 +8,9 @@ target_include_directories(mbed-mbedtls
 
 target_sources(mbed-mbedtls
     INTERFACE
-        aes_alt.c
-		aria_alt.c
-		sha1_alt.c
-		sha256_alt.c
-		sha512_alt.c
+	aes_alt.c
+	aria_alt.c
+	sha1_alt.c
+	sha256_alt.c
+	sha512_alt.c
 )

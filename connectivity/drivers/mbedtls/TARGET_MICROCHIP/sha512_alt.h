@@ -32,11 +32,12 @@ extern "C" {
  * \brief          SHA-512 context structure
  */
 typedef struct mbedtls_sha512_context_s {
-	uint64_t state[8];          /*!< intermediate digest state  */
+	uint32_t state[16];         /*!< intermediate digest state  */
     uint64_t total[2];          /*!< number of bytes processed  */
     unsigned char buffer[128];  /*!< data block being processed */
     int is384;                  /*!< Determines which function to use:
                                      0: Use SHA-512, or 1: Use SHA-384. */
+	int isfirst;                /*!< First block */
 }
 mbedtls_sha512_context;
 

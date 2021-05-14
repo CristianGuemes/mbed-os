@@ -37,6 +37,7 @@ typedef struct mbedtls_sha256_context_s {
     unsigned char buffer[64];   /*!< data block being processed */
     int is224;                  /*!< Determines which function to use:
                                      0: Use SHA-256, or 1: Use SHA-224 */
+    int isfirst;                /*!< First block */
 }
 mbedtls_sha256_context;
 

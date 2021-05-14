@@ -115,7 +115,7 @@ void mbedtls_sha256_clone(mbedtls_sha256_context *dst, const mbedtls_sha256_cont
         return;
     }
 
-    *dst = *src;
+    memcpy(dst, src, sizeof(mbedtls_sha256_context));
 }
 
 /*
@@ -129,31 +129,7 @@ int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
     ctx->is224 = is224;
     ctx->total[0] = 0;
     ctx->total[1] = 0;
-
-    /* Configure the SHA */
-    g_sha256_cfg.start_mode = SHA_MANUAL_START;
-    g_sha256_cfg.aoe = false;
-    g_sha256_cfg.procdly = false;
-    g_sha256_cfg.uihv = false;
-    g_sha256_cfg.uiehv = false;
-    g_sha256_cfg.bpe = false;
-    if (is224 == 0) {
-        g_sha256_cfg.algo = SHA_ALGO_SHA256;
-    } else {
-        g_sha256_cfg.algo = SHA_ALGO_SHA224;
-    }
-    g_sha256_cfg.tmpclk = false;
-    g_sha256_cfg.dualbuff = false;
-    g_sha256_cfg.check = SHA_NO_CHECK;
-    g_sha256_cfg.chkcnt = 0;
-    sha_set_config(SHA, &g_sha256_cfg);
-
-    /* No automatic padding */
-    sha_set_msg_size(SHA, 0);
-    sha_set_byte_count(SHA, 0);
-
-    /* Set first block */
-    sha_set_first_block(SHA);
+    ctx->isfirst = true;
 
     return 0;
 }
@@ -197,7 +173,7 @@ int mbedtls_sha256_update_ret(mbedtls_sha256_context *ctx, const unsigned char *
     }
 
     while (ilen >= 64) {
-        if ((err = mbedtls_internal_sha256_process(ctx, ctx->buffer)) != 0) {
+        if ((err = mbedtls_internal_sha256_process(ctx, input)) != 0) {
             return err;
         }
 
@@ -285,6 +261,41 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned 
 
     SHA256_VALIDATE_RET(ctx != NULL);
     SHA256_VALIDATE_RET((const unsigned char *)data != NULL);
+
+    /* Set first block or write intermeditate hash */
+    if (ctx->isfirst) {
+        /* Configure the SHA */
+        g_sha256_cfg.start_mode = SHA_MANUAL_START;
+        g_sha256_cfg.aoe = false;
+        g_sha256_cfg.procdly = false;
+        g_sha256_cfg.uihv = false;
+        g_sha256_cfg.uiehv = false;
+        g_sha256_cfg.bpe = false;
+        g_sha256_cfg.algo = (ctx->is224 == 0) ? SHA_ALGO_SHA256 : SHA_ALGO_SHA224;
+        g_sha256_cfg.tmpclk = false;
+        g_sha256_cfg.dualbuff = false;
+        g_sha256_cfg.check = SHA_NO_CHECK;
+        g_sha256_cfg.chkcnt = 0;
+        sha_set_config(SHA, &g_sha256_cfg);
+
+        /* No automatic padding */
+        sha_set_msg_size(SHA, 0);
+        sha_set_byte_count(SHA, 0);
+
+        /* Set first block */
+        sha_set_first_block(SHA);
+        ctx->isfirst = false;
+    } else {
+        /* Write the intermediate hash value to the input data registers */
+        sha_set_write_initial_val(SHA);
+        sha_write_input_data(SHA, ctx->state, SHA_BLOCK_SIZE_16);
+        sha_clear_write_initial_val(SHA);
+
+        /* Reconfigure the SHA */
+        g_sha256_cfg.uihv = true;
+        g_sha256_cfg.algo = (ctx->is224 == 0) ? SHA_ALGO_SHA256 : SHA_ALGO_SHA224;
+        sha_set_config(SHA, &g_sha256_cfg);
+    }
 
     /* Write the data to be hashed to the input data registers */
     sha_write_input_data(SHA, (uint32_t *)data, SHA_BLOCK_SIZE_16);
