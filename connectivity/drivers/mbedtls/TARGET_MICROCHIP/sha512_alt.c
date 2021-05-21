@@ -26,6 +26,7 @@
 #if defined(MBEDTLS_SHA512_ALT)
 
 #include "sha.h"
+#include "sha_internal.h"
 #include <string.h>
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
@@ -85,6 +86,13 @@ struct sha_config g_sha512_cfg;
 /* State indicate */
 volatile bool b_sha512_state = false;
 
+#if defined(MBEDTLS_THREADING_C)
+#include "mbedtls/threading.h"
+/* Mutex for protecting access to the SHA instance */
+static mbedtls_threading_mutex_t sha512_mutex;
+static volatile bool sha512_mutex_inited = false;
+#endif
+
 /**
 * \brief The SHA512 interrupt call back function.
 */
@@ -95,6 +103,34 @@ static void sha512_callback(uint8_t uc_data)
     /* Read the output */
     sha_read_output_data(SHA, sha512_output_data);
     b_sha512_state = true;
+}
+
+static void _sha512_lock(void)
+{
+#if defined(MBEDTLS_THREADING_C)
+    if (!sha512_mutex_inited) {
+        /* Turn off interrupts that can cause preemption */
+        Disable_global_interrupt();
+
+        if (!sha512_mutex_inited) {
+            mbedtls_mutex_init(&sha512_mutex);
+            sha512_mutex_inited = true;
+        }
+
+        Enable_global_interrupt();
+    }
+
+    mbedtls_mutex_lock(&sha512_mutex);
+#endif
+}
+
+static void _sha512_unlock(void)
+{
+#if defined(MBEDTLS_THREADING_C)
+    if (sha512_mutex_inited) {
+        mbedtls_mutex_unlock(&sha512_mutex);
+    }
+#endif
 }
 
 /*
@@ -139,6 +175,7 @@ void mbedtls_sha512_clone(mbedtls_sha512_context *dst, const mbedtls_sha512_cont
     }
 
     memcpy(dst, src, sizeof(mbedtls_sha512_context));
+    dst->id = sha_internal_get_new_id();
 }
 
 /*
@@ -153,6 +190,7 @@ int mbedtls_sha512_starts_ret(mbedtls_sha512_context *ctx, int is384)
     ctx->total[0] = 0;
     ctx->total[1] = 0;
     ctx->isfirst = true;
+    ctx->id = sha_internal_get_new_id();
 
     return 0;
 }
@@ -259,18 +297,6 @@ int mbedtls_sha512_finish_ret(mbedtls_sha512_context *ctx, unsigned char output[
     /*
     * Output final state
     */
-//    sha512_put_uint64_be_local(ctx->state[0], output, 0);
-//    sha512_put_uint64_be_local(ctx->state[1], output, 8);
-//    sha512_put_uint64_be_local(ctx->state[2], output, 16);
-//    sha512_put_uint64_be_local(ctx->state[3], output, 24);
-//    sha512_put_uint64_be_local(ctx->state[4], output, 32);
-//    sha512_put_uint64_be_local(ctx->state[5], output, 40);
-//
-//    if (ctx->is384 == 0) {
-//        sha512_put_uint64_be_local(ctx->state[6], output, 48);
-//        sha512_put_uint64_be_local(ctx->state[7], output, 56);
-//    }
-
     PUT_UINT32_BE_local(ctx->state[0], output, 0);
     PUT_UINT32_BE_local(ctx->state[1], output, 4);
     PUT_UINT32_BE_local(ctx->state[2], output, 8);
@@ -301,20 +327,15 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned 
     SHA512_VALIDATE_RET(ctx != NULL);
     SHA512_VALIDATE_RET((const unsigned char *)data != NULL);
 
-    /* Set first block or write intermeditate hash */
+	/* Protect context access                                  */
+    /* (it may occur at a same time in a threaded environment) */
+    _sha512_lock();
+
+    /* Set first block or write intermediate hash */
     if (ctx->isfirst) {
         /* Configure the SHA */
-        g_sha512_cfg.start_mode = SHA_MANUAL_START;
-        g_sha512_cfg.aoe = false;
-        g_sha512_cfg.procdly = false;
-        g_sha512_cfg.uihv = false;
-        g_sha512_cfg.uiehv = false;
-        g_sha512_cfg.bpe = false;
         g_sha512_cfg.algo = (ctx->is384 == 0) ? SHA_ALGO_SHA512 : SHA_ALGO_SHA384;
-        g_sha512_cfg.tmpclk = false;
-        g_sha512_cfg.dualbuff = false;
-        g_sha512_cfg.check = SHA_NO_CHECK;
-        g_sha512_cfg.chkcnt = 0;
+        g_sha512_cfg.uihv = false;
         sha_set_config(SHA, &g_sha512_cfg);
 
         /* No automatic padding */
@@ -324,6 +345,7 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned 
         /* Set first block */
         sha_set_first_block(SHA);
         ctx->isfirst = false;
+        sha_internal_set_current_id(ctx->id);
     } else {
         /* Write the intermediate hash value to the input data registers */
         sha_set_write_initial_val(SHA);
@@ -331,9 +353,16 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned 
         sha_clear_write_initial_val(SHA);
 
         /* Reconfigure the SHA */
-        g_sha512_cfg.uihv = true;
         g_sha512_cfg.algo = (ctx->is384 == 0) ? SHA_ALGO_SHA512 : SHA_ALGO_SHA384;
+        g_sha512_cfg.uihv = true;
         sha_set_config(SHA, &g_sha512_cfg);
+
+        /* Set FIRST command again when contexts have changed */
+        if (ctx->id != sha_internal_get_current_id()) {
+            /* Set first block */
+            sha_set_first_block(SHA);
+            sha_internal_set_current_id(ctx->id);
+        }
     }
 
     /* Write the data to be hashed to the input data registers */
@@ -348,19 +377,7 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned 
     }
 
     /* Copy intermediate result */
-//    for (i = 0; i < (SHA_HASH_SIZE_SHA384 / 2); i++) {
-//        j = i * 2;
-//        ctx->state[i] = ((uint64_t)sha512_output_data[j + 1] << 32) | (uint64_t)sha512_output_data[j];
-//    }
-//
-//    if (ctx->is384 == 0) {
-//		for (i = 0; i < (SHA_HASH_SIZE_SHA512 / 2); i++) {
-//            j = i * 2;
-//			ctx->state[i] = ((uint64_t)sha512_output_data[j + 1] << 32) | (uint64_t)sha512_output_data[j];
-//		}
-//    }
-
-     for (i = 0; i < SHA_HASH_SIZE_SHA384; i++) {
+    for (i = 0; i < SHA_HASH_SIZE_SHA384; i++) {
         ctx->state[i] = sha512_output_data[i];
     }
 
@@ -369,6 +386,9 @@ int mbedtls_internal_sha512_process(mbedtls_sha512_context *ctx, const unsigned 
             ctx->state[i] = sha512_output_data[i];
         }
     }
+
+	/* Free context access */
+    _sha512_unlock();
 
     return 0;
 }

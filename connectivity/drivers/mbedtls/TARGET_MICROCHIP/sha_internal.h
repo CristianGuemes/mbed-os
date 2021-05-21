@@ -1,7 +1,7 @@
 /**
- * \file sha1_alt.h
+ * \file sha_internal.h
  *
- * \brief SHA-1 cryptographic hash function
+ * \brief SHA internal functions
  *
  *  <b>Copyright (c) 2021 Microchip Technology Inc. and its subsidiaries.</b>
  *  SPDX-License-Identifier: Apache-2.0
@@ -19,10 +19,10 @@
  *  limitations under the License.
  */
 
-#ifndef MBEDTLS_SHA1_ALT_H
-#define MBEDTLS_SHA1_ALT_H
+#ifndef MBEDTLS_SHA_INTERNAL_H
+#define MBEDTLS_SHA_INTERNAL_H
 
-#if defined(MBEDTLS_SHA1_ALT)
+#if defined(MBEDTLS_SHA1_ALT) || defined(MBEDTLS_SHA256_ALT) || defined(MBEDTLS_SHA512_ALT)
 
 #include <stdint.h>
 
@@ -30,23 +30,14 @@
 extern "C" {
 #endif
 
-/**
- * \brief          SHA-1 context structure
- */
-typedef struct
-{
-    uint32_t state[5];          /*!< intermediate digest state  */
-    uint32_t total[2];          /*!< number of bytes processed  */
-    unsigned char buffer[64];   /*!< data block being processed */
-	int isfirst;                /*!< First block */
-    uint32_t id;                /*!< Identifier of this context */
-}
-mbedtls_sha1_context;
+uint32_t sha_internal_get_new_id(void);
+uint32_t sha_internal_get_current_id(void);
+void sha_internal_set_current_id(uint32_t current_id);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* #if defined(MBEDTLS_SHA1_ALT) */
+#endif /* #if defined(MBEDTLS_SHA1_ALT)  || defined(MBEDTLS_SHA256_ALT) || defined(MBEDTLS_SHA512_ALT) */
 
-#endif /* #ifndef MBEDTLS_SHA1_ALT_H */
+#endif /* #ifndef MBEDTLS_SHA_INTERNAL_H */

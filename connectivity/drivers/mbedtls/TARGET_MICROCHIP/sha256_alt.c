@@ -25,6 +25,7 @@
 #if defined(MBEDTLS_SHA256_ALT)
 
 #include "sha.h"
+#include "sha_internal.h"
 #include <string.h>
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
@@ -62,6 +63,13 @@ struct sha_config g_sha256_cfg;
 /* State indicate */
 volatile bool b_sha256_state = false;
 
+#if defined(MBEDTLS_THREADING_C)
+#include "mbedtls/threading.h"
+/* Mutex for protecting access to the SHA instance */
+static mbedtls_threading_mutex_t sha256_mutex;
+static volatile bool sha256_mutex_inited = false;
+#endif
+
 /**
 * \brief The SHA256 interrupt call back function.
 */
@@ -72,6 +80,34 @@ static void sha256_callback(uint8_t uc_data)
     /* Read the output */
     sha_read_output_data(SHA, sha256_output_data);
     b_sha256_state = true;
+}
+
+static void _sha256_lock(void)
+{
+#if defined(MBEDTLS_THREADING_C)
+    if (!sha256_mutex_inited) {
+        /* Turn off interrupts that can cause preemption */
+        Disable_global_interrupt();
+
+        if (!sha256_mutex_inited) {
+            mbedtls_mutex_init(&sha256_mutex);
+            sha256_mutex_inited = true;
+        }
+
+        Enable_global_interrupt();
+    }
+
+    mbedtls_mutex_lock(&sha256_mutex);
+#endif
+}
+
+static void _sha256_unlock(void)
+{
+#if defined(MBEDTLS_THREADING_C)
+    if (sha256_mutex_inited) {
+        mbedtls_mutex_unlock(&sha256_mutex);
+    }
+#endif
 }
 
 /*
@@ -116,6 +152,7 @@ void mbedtls_sha256_clone(mbedtls_sha256_context *dst, const mbedtls_sha256_cont
     }
 
     memcpy(dst, src, sizeof(mbedtls_sha256_context));
+    dst->id = sha_internal_get_new_id();
 }
 
 /*
@@ -130,6 +167,7 @@ int mbedtls_sha256_starts_ret(mbedtls_sha256_context *ctx, int is224)
     ctx->total[0] = 0;
     ctx->total[1] = 0;
     ctx->isfirst = true;
+    ctx->id = sha_internal_get_new_id();
 
     return 0;
 }
@@ -262,20 +300,15 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned 
     SHA256_VALIDATE_RET(ctx != NULL);
     SHA256_VALIDATE_RET((const unsigned char *)data != NULL);
 
-    /* Set first block or write intermeditate hash */
+	/* Protect context access                                  */
+    /* (it may occur at a same time in a threaded environment) */
+    _sha256_lock();
+
+    /* Set first block or write intermediate hash */
     if (ctx->isfirst) {
         /* Configure the SHA */
-        g_sha256_cfg.start_mode = SHA_MANUAL_START;
-        g_sha256_cfg.aoe = false;
-        g_sha256_cfg.procdly = false;
-        g_sha256_cfg.uihv = false;
-        g_sha256_cfg.uiehv = false;
-        g_sha256_cfg.bpe = false;
         g_sha256_cfg.algo = (ctx->is224 == 0) ? SHA_ALGO_SHA256 : SHA_ALGO_SHA224;
-        g_sha256_cfg.tmpclk = false;
-        g_sha256_cfg.dualbuff = false;
-        g_sha256_cfg.check = SHA_NO_CHECK;
-        g_sha256_cfg.chkcnt = 0;
+		g_sha256_cfg.uihv = false;
         sha_set_config(SHA, &g_sha256_cfg);
 
         /* No automatic padding */
@@ -285,6 +318,7 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned 
         /* Set first block */
         sha_set_first_block(SHA);
         ctx->isfirst = false;
+        sha_internal_set_current_id(ctx->id);
     } else {
         /* Write the intermediate hash value to the input data registers */
         sha_set_write_initial_val(SHA);
@@ -292,9 +326,16 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned 
         sha_clear_write_initial_val(SHA);
 
         /* Reconfigure the SHA */
-        g_sha256_cfg.uihv = true;
         g_sha256_cfg.algo = (ctx->is224 == 0) ? SHA_ALGO_SHA256 : SHA_ALGO_SHA224;
+		g_sha256_cfg.uihv = true;
         sha_set_config(SHA, &g_sha256_cfg);
+
+        /* Set FIRST command again when contexts have changed */
+        if (ctx->id != sha_internal_get_current_id()) {
+            /* Set first block */
+            sha_set_first_block(SHA);
+            sha_internal_set_current_id(ctx->id);
+        }
     }
 
     /* Write the data to be hashed to the input data registers */
@@ -316,6 +357,9 @@ int mbedtls_internal_sha256_process(mbedtls_sha256_context *ctx, const unsigned 
     if (ctx->is224 == 0) {
         ctx->state[SHA_HASH_SIZE_SHA256 - 1] = sha256_output_data[SHA_HASH_SIZE_SHA256 - 1];
     }
+
+	/* Free context access */
+    _sha256_unlock();
 
     return 0;
 }

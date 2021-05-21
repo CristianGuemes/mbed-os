@@ -38,6 +38,7 @@ typedef struct mbedtls_sha512_context_s {
     int is384;                  /*!< Determines which function to use:
                                      0: Use SHA-512, or 1: Use SHA-384. */
 	int isfirst;                /*!< First block */
+    uint32_t id;                /*!< Identifier of this context */
 }
 mbedtls_sha512_context;
 

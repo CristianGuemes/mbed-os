@@ -25,6 +25,7 @@
 #if defined(MBEDTLS_SHA1_ALT)
 
 #include "sha.h"
+#include "sha_internal.h"
 #include <string.h>
 #include "mbedtls/platform.h"
 #include "mbedtls/platform_util.h"
@@ -62,6 +63,13 @@ struct sha_config g_sha1_cfg;
 /* State indicate */
 volatile bool b_sha1_state = false;
 
+#if defined(MBEDTLS_THREADING_C)
+#include "mbedtls/threading.h"
+/* Mutex for protecting access to the SHA instance */
+static mbedtls_threading_mutex_t sha1_mutex;
+static volatile bool sha1_mutex_inited = false;
+#endif
+
 /**
 * \brief The SHA1 interrupt call back function.
 */
@@ -72,6 +80,34 @@ static void sha1_callback(uint8_t uc_data)
     /* Read the output */
     sha_read_output_data(SHA, sha1_output_data);
     b_sha1_state = true;
+}
+
+static void _sha1_lock(void)
+{
+#if defined(MBEDTLS_THREADING_C)
+    if (!sha1_mutex_inited) {
+        /* Turn off interrupts that can cause preemption */
+        Disable_global_interrupt();
+
+        if (!sha1_mutex_inited) {
+            mbedtls_mutex_init(&sha1_mutex);
+            sha1_mutex_inited = true;
+        }
+
+        Enable_global_interrupt();
+    }
+
+    mbedtls_mutex_lock(&sha1_mutex);
+#endif
+}
+
+static void _sha1_unlock(void)
+{
+#if defined(MBEDTLS_THREADING_C)
+    if (sha1_mutex_inited) {
+        mbedtls_mutex_unlock(&sha1_mutex);
+    }
+#endif
 }
 
 /*
@@ -116,6 +152,7 @@ void mbedtls_sha1_clone(mbedtls_sha1_context *dst, const mbedtls_sha1_context *s
     }
 
     memcpy(dst, src, sizeof(mbedtls_sha1_context));
+    dst->id = sha_internal_get_new_id();
 }
 
 /*
@@ -128,6 +165,7 @@ int mbedtls_sha1_starts_ret(mbedtls_sha1_context *ctx)
     ctx->total[0] = 0;
     ctx->total[1] = 0;
     ctx->isfirst = true;
+    ctx->id = sha_internal_get_new_id();
 
     return 0;
 }
@@ -253,20 +291,15 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx, const unsigned char
     SHA1_VALIDATE_RET(ctx != NULL);
     SHA1_VALIDATE_RET((const unsigned char *)data != NULL);
 
-    /* Set first block or write intermeditate hash */
+	/* Protect context access                                  */
+    /* (it may occur at a same time in a threaded environment) */
+    _sha1_lock();
+
+    /* Set first block or write intermediate hash */
     if (ctx->isfirst) {
         /* Configure the SHA */
-        g_sha1_cfg.start_mode = SHA_MANUAL_START;
-        g_sha1_cfg.aoe = false;
-        g_sha1_cfg.procdly = false;
-        g_sha1_cfg.uihv = false;
-        g_sha1_cfg.uiehv = false;
-        g_sha1_cfg.bpe = false;
-        g_sha1_cfg.algo = SHA_ALGO_SHA1;
-        g_sha1_cfg.tmpclk = false;
-        g_sha1_cfg.dualbuff = false;
-        g_sha1_cfg.check = SHA_NO_CHECK;
-        g_sha1_cfg.chkcnt = 0;
+		g_sha1_cfg.algo = SHA_ALGO_SHA1;
+		g_sha1_cfg.uihv = false;
         sha_set_config(SHA, &g_sha1_cfg);
 
         /* No automatic padding */
@@ -276,6 +309,7 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx, const unsigned char
         /* Set first block */
         sha_set_first_block(SHA);
         ctx->isfirst = false;
+        sha_internal_set_current_id(ctx->id);
     } else {
         /* Write the intermediate hash value to the input data registers */
         sha_set_write_initial_val(SHA);
@@ -283,9 +317,16 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx, const unsigned char
         sha_clear_write_initial_val(SHA);
 
         /* Reconfigure the SHA */
+		g_sha1_cfg.algo = SHA_ALGO_SHA1;
         g_sha1_cfg.uihv = true;
-        g_sha1_cfg.algo = SHA_ALGO_SHA1;
-        sha_set_config(SHA, &g_sha1_cfg);
+		sha_set_config(SHA, &g_sha1_cfg);
+
+        /* Set FIRST command again when contexts have changed */
+        if (ctx->id != sha_internal_get_current_id()) {
+            /* Set first block */
+            sha_set_first_block(SHA);
+            sha_internal_set_current_id(ctx->id);
+        }
     }
 
     /* Write the data to be hashed to the input data registers */
@@ -303,6 +344,9 @@ int mbedtls_internal_sha1_process(mbedtls_sha1_context *ctx, const unsigned char
     for (i = 0; i < SHA_HASH_SIZE_SHA1; i++) {
         ctx->state[i] = sha1_output_data[i];
     }
+
+    /* Free context access */
+    _sha1_unlock();
 
     return 0;
 }
