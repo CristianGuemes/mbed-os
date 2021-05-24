@@ -72,7 +72,8 @@ typedef enum IRQn
   RSTC_IRQn            =  1, /**<  1 Reset Controller (RSTC) */
   RTC_IRQn             =  2, /**<  2 Real Time Clock (RTC) */
   RTT_IRQn             =  3, /**<  3 Real Time Timer (RTT) */
-  DWDT_IRQn            =  4, /**<  4 Dual Watchdog Timer (DWDT) */
+  DWDT0_IRQn           =  4, /**<  4 Dual Watchdog 0 Timer (DWDT0) */
+  DWDT1_IRQn           =  5, /**<  4 Dual Watchdog 1 Timer (DWDT1) */
   PMC_IRQn             =  6, /**<  6 Power Management Controller (PMC) */
   SEFC0_IRQn           =  7, /**<  7 Embedded Flash Controller 0 (SEFC0) */
   SEFC1_IRQn           =  8, /**<  8 Embedded Flash Controller 1 (SEFC1) */
@@ -192,8 +193,8 @@ typedef struct _DeviceVectors
   void* pfnRSTC_Handler;         /*  1 Reset Controller */
   void* pfnRTC_Handler;          /*  2 Real Time Clock */
   void* pfnRTT_Handler;          /*  3 Real Time Timer */
-  void* pfnDWDT_Handler;         /*  4 Dual Watchdog Timer */
-  void* pvReserved5;
+  void* pfnDWDT0_Handler;        /*  4 Dual Watchdog 0 Timer */
+  void* pfnDWDT1_Handler;        /*  5 Dual Watchdog 1 Timer */
   void* pfnPMC_Handler;          /*  6 Power Management Controller */
   void* pfnSEFC0_Handler;        /*  7 Embedded Flash Controller 0 */
   void* pfnSEFC1_Handler;        /*  8 Embedded Flash Controller 1 */
@@ -311,7 +312,8 @@ void ARM0_IXC_Handler     ( void );
 void ARM1_FPU_Handler     ( void );
 void ARM1_IXC_Handler     ( void );
 void CPKCC_Handler        ( void );
-void DWDT_Handler         ( void );
+void DWDT0_Handler        ( void );
+void DWDT1_Handler        ( void );
 void FLEXCOM0_Handler     ( void );
 void FLEXCOM1_Handler     ( void );
 void FLEXCOM2_Handler     ( void );
@@ -551,7 +553,8 @@ void UART_Handler         ( void );
 #define ID_RSTC         ( 1) /**< \brief Reset Controller (RSTC) */
 #define ID_RTC          ( 2) /**< \brief Real Time Clock (RTC) */
 #define ID_RTT          ( 3) /**< \brief Real Time Timer (RTT) */
-#define ID_DWDT         ( 4) /**< \brief Dual Watchdog Timer (DWDT) */
+#define ID_DWDT0        ( 4) /**< \brief Dual Watchdog 0 Timer (DWDT0) */
+#define ID_DWDT1        ( 5) /**< \brief Dual Watchdog 1 Timer (DWDT1) */
 #define ID_PMC          ( 6) /**< \brief Power Management Controller (PMC) */
 #define ID_SEFC0        ( 7) /**< \brief Embedded Flash Controller 0 (SEFC0) */
 #define ID_SEFC1        ( 8) /**< \brief Embedded Flash Controller 1 (SEFC1) */

@@ -142,6 +142,7 @@ typedef struct {
 #define ADC_MR_TRANSFER_Pos 28
 #define ADC_MR_TRANSFER_Msk (0x3u << ADC_MR_TRANSFER_Pos) /**< \brief (ADC_MR) Transfer Time */
 #define ADC_MR_TRANSFER(value) ((ADC_MR_TRANSFER_Msk & ((value) << ADC_MR_TRANSFER_Pos)))
+#define ADC_MR_ALWAYS1 (0x1u << 30) /**< \brief (ADC_MR) Always 1 */
 #define ADC_MR_USEQ (0x1u << 31) /**< \brief (ADC_MR) User Sequence Enable */
 #define   ADC_MR_USEQ_NUM_ORDER (0x0u << 31) /**< \brief (ADC_MR) Normal mode: The controller converts channels in a simple numeric order depending only on the channel index. */
 #define   ADC_MR_USEQ_REG_ORDER (0x1u << 31) /**< \brief (ADC_MR) User Sequence mode: The sequence respects what is defined in the ADC_SEQR1 and ADC_SEQR2 registers and can be used to convert the same channel several times. */

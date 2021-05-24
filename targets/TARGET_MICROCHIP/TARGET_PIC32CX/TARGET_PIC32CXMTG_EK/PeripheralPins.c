@@ -25,47 +25,14 @@
 #include "mbed_toolchain.h"
 
 /************ADC***************/
-/* The third "function" value is used to select the correct ADC channel */
-//MBED_WEAK const PinMap PinMap_ADC[] = {
-// #ifdef ADC0_BASE
-    // {PA0,  ADC_0, adcPosSelAPORT3XCH8},
-    // {PA1,  ADC_0, adcPosSelAPORT4XCH9},
-    // {PA2,  ADC_0, adcPosSelAPORT3XCH10},
-    // {PA3,  ADC_0, adcPosSelAPORT4XCH11},
-    // {PA4,  ADC_0, adcPosSelAPORT3XCH12},
-    // {PA5,  ADC_0, adcPosSelAPORT4XCH13},
-
-    // {PB11, ADC_0, adcPosSelAPORT4XCH27},
-    // {PB12, ADC_0, adcPosSelAPORT3XCH28},
-    // {PB14, ADC_0, adcPosSelAPORT3XCH30},
-    // {PB15, ADC_0, adcPosSelAPORT4XCH31},
-
-    // {PC6,  ADC_0, adcPosSelAPORT1XCH6},
-    // {PC7,  ADC_0, adcPosSelAPORT2XCH7},
-    // {PC8,  ADC_0, adcPosSelAPORT1XCH8},
-    // {PC9,  ADC_0, adcPosSelAPORT2XCH9},
-    // {PC10, ADC_0, adcPosSelAPORT1XCH10},
-    // {PC11, ADC_0, adcPosSelAPORT2XCH11},
-
-    // {PD9,  ADC_0, adcPosSelAPORT4XCH1},
-    // {PD10, ADC_0, adcPosSelAPORT3XCH2},
-    // {PD11, ADC_0, adcPosSelAPORT3YCH3},
-    // {PD12, ADC_0, adcPosSelAPORT3XCH4},
-    // {PD13, ADC_0, adcPosSelAPORT3YCH5},
-    // {PD14, ADC_0, adcPosSelAPORT3XCH6},
-    // {PD15, ADC_0, adcPosSelAPORT4XCH7},
-
-    // {PF0,  ADC_0, adcPosSelAPORT1XCH16},
-    // {PF1,  ADC_0, adcPosSelAPORT2XCH17},
-    // {PF2,  ADC_0, adcPosSelAPORT1XCH18},
-    // {PF3,  ADC_0, adcPosSelAPORT2XCH19},
-    // {PF4,  ADC_0, adcPosSelAPORT1XCH20},
-    // {PF5,  ADC_0, adcPosSelAPORT2XCH21},
-    // {PF6,  ADC_0, adcPosSelAPORT1XCH22},
-    // {PF7,  ADC_0, adcPosSelAPORT2XCH23},
-// #endif
-    // {NC ,  NC   , NC}
-// };
+MBED_WEAK const PinMap PinMap_ADC[] = {
+     {A29,  ADC_0, 0},
+     {A30,  ADC_0, 1},
+     {A31,  ADC_0, 2},
+     {B0,  ADC_0, 3},
+     {B1,  ADC_0, 4},
+     {NC ,  NC   , 0}
+ };
 
 /************I2C SDA***********/
 MBED_WEAK const PinMap PinMap_I2C_SDA[] = {

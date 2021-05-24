@@ -31,21 +31,11 @@ extern "C" {
 
 #define STDIO_UART        USART_0
 
-// #if DEVICE_ANALOGIN
-// typedef enum {
-// #ifdef ADC0_BASE
-    // ADC_0 = ADC0_BASE,
-// #endif
-// } ADCName;
-// #endif
-
-// #if DEVICE_ANALOGOUT
-// typedef enum {
-// #ifdef DAC0_BASE
-    // DAC_0 = DAC0_BASE,
-// #endif
-// } DACName;
-// #endif
+#if DEVICE_ANALOGIN
+typedef enum {
+    ADC_0 = (uint32_t)ADC,
+} ADCName;
+#endif
 
 #if DEVICE_I2C
 typedef enum {

@@ -4265,7 +4265,7 @@
             "MIMXRT1050",
             "IMX",
             "NXP_EMAC",
-	    "USB"
+        "USB"
         ],
         "is_disk_virtual": true,
         "macros": [
@@ -7822,20 +7822,20 @@
         "inherits": ["AMA3B1KK"],
         "components_add": ["lis2dh12", "hm01b0"]
     },
-	"PIC32CX": {
+    "PIC32CX": {
         "inherits": [
-			"Target"
-		],
-		"extra_labels": [
+            "Target"
+        ],
+        "extra_labels": [
             "MICROCHIP"
         ],
-		"core": "Cortex-M4F",
+        "core": "Cortex-M4F",
         "supported_toolchains": [
             "ARM",
             "GCC_ARM",
             "IAR"
         ],
-		"device_has": [
+        "device_has": [
             "INTERRUPTIN",
             "PORTIN",
             "PORTOUT",
@@ -7843,18 +7843,19 @@
             "MPU",
             "LPTICKER",
             "USTICKER",
-			"RESET_REASON",
-			"RTC", 
+            "RESET_REASON",
+            "RTC", 
             "FLASH",
             "WATCHDOG",
-			"TRNG",
+            "TRNG",
             "I2C",
             "I2CSLAVE",
             "SPI",
             "SPISLAVE",
             "QSPI",
             "PWMOUT",
-			"SLEEP"
+            "SLEEP",
+            "ANALOGIN"
         ],
         "components_add": [
             "FLASHIAP"
@@ -7864,41 +7865,41 @@
 			"MBEDTLS_CONFIG_HW_SUPPORT"
         ],
         "c_lib": "small",
-		"bootloader_supported": true,
-		"public": false
+        "bootloader_supported": true,
+        "public": false
     },
     "PIC32CXMTG_EK": {
         "inherits": [
-			"PIC32CX"
-		],
+            "PIC32CX"
+        ],
         "macros_add": [
             "__PIC32CX2051MTG100__"
         ],
-		"device_name": "PIC32CX2051MTG100",
-		"detect_code": ["0921"],
-		"components_add": ["SST26VF"]
+        "device_name": "PIC32CX2051MTG100",
+        "detect_code": ["0921"],
+        "components_add": ["SST26VF"]
     },
     "PIC32CXMTSH_DB": {
         "inherits": [
-			"PIC32CX"
-		],
+            "PIC32CX"
+        ],
         "macros_add": [
             "__PIC32CX2051MTSH128_0__"
         ],
-		"device_name": "PIC32CX2051MTSH128_0",
-		"detect_code": ["0921"],
-		"components_add": ["SST26VF"]
+        "device_name": "PIC32CX2051MTSH128_0",
+        "detect_code": ["0921"],
+        "components_add": ["SST26VF"]
     },
     "PIC32CXMTSH_1_DB": {
         "inherits": [
-			"PIC32CX"
-		],
+            "PIC32CX"
+        ],
         "macros_add": [
             "__PIC32CX2051MTSH128_1__"
         ],
-		"device_name": "PIC32CX2051MTSH128_1",
-		"detect_code": ["0921"],
-		"components_add": ["SST26VF"]
+        "device_name": "PIC32CX2051MTSH128_1",
+        "detect_code": ["0921"],
+        "components_add": ["SST26VF"]
     },
     "__build_tools_metadata__": {
         "version": "1",
