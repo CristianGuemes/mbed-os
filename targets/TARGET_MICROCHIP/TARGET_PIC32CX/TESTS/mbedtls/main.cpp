@@ -72,7 +72,7 @@ Case cases[] = {
 #if defined(MBEDTLS_SELF_TEST)
 
 #if defined(MBEDTLS_SHA1_C)
-    //Case("mbedtls_sha1_self_test", mbedtls_sha1_self_test_test_case),
+    Case("mbedtls_sha1_self_test", mbedtls_sha1_self_test_test_case),
 #endif
 
 #if defined(MBEDTLS_AES_C)
@@ -80,7 +80,7 @@ Case cases[] = {
 #endif
 
 #if defined(MBEDTLS_ARIA_C)
-    //Case("mbedtls_aria_self_test", mbedtls_aria_self_test_test_case),
+    Case("mbedtls_aria_self_test", mbedtls_aria_self_test_test_case),
 #endif
 
 #endif /* MBEDTLS_SELF_TEST */

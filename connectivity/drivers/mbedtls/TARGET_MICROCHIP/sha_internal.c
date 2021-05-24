@@ -18,6 +18,8 @@
 *  limitations under the License.
 */
 
+#include "mbedtls_device.h"
+
 #if defined(MBEDTLS_SHA1_ALT) || defined(MBEDTLS_SHA256_ALT) || defined(MBEDTLS_SHA512_ALT)
 
 #include "sha_internal.h"
