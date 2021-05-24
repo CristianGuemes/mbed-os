@@ -7862,7 +7862,7 @@
         ],
         "macros_add": [
             "MBED_TICKLESS",
-			"MBEDTLS_CONFIG_HW_SUPPORT"
+            "MBEDTLS_CONFIG_HW_SUPPORT"
         ],
         "c_lib": "small",
         "bootloader_supported": true,
