@@ -7861,7 +7861,8 @@
             "FLASHIAP"
         ],
         "macros_add": [
-            "MBED_TICKLESS"
+            "MBED_TICKLESS",
+            "MBEDTLS_CONFIG_HW_SUPPORT"
         ],
         "c_lib": "small",
         "bootloader_supported": true,
